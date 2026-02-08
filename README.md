@@ -201,7 +201,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## 📧 Contact
 
-Your Name - [@yourtwitter](https://twitter.com/yourtwitter)
+Vasant98 - [LinkedIn](https://www.linkedin.com/in/vasanttan/)
 
 Project Link: [https://github.com/yourusername/propertyplan-sg](https://github.com/yourusername/propertyplan-sg)
 
