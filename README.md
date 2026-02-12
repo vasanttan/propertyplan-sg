@@ -1,221 +1,306 @@
 # 🏠 PropertyPlan SG
 
-A comprehensive web-based property purchase calculator designed specifically for Singapore's real estate market. Plan your HDB or Condo purchase with detailed financial breakdowns, stamp duty calculations, and mortgage payment tracking.
+An interactive Singapore property purchase calculator that helps you analyze HDB and private condo financing, including stamp duties (BSD/ABSD), loan calculations, and scenario comparisons.
 
-![PropertyPlan SG Screenshot](screenshots/overview.png)
+![PropertyPlan SG Overview](screenshots/overview.png)
 
-## 🌟 Features
+🔗 **Live Demo:** [https://vasanttan.github.io/propertyplan-sg/](https://vasanttan.github.io/propertyplan-sg/)
 
-### Property Types
-- **HDB Flat (Resale)** - With HDB loan support and specific LTV rules
-- **Private Condo (Resale)** - Bank loan options with tiered LTV limits
+---
 
-### Financial Calculations
-- ✅ **Buyer's Stamp Duty (BSD)** - Progressive tier calculation
-- ✅ **Additional Buyer's Stamp Duty (ABSD)** - Based on buyer profile (SC/PR/Foreigner)
-- ✅ **Loan-to-Value (LTV)** Validation - Enforces MAS regulations
-- ✅ **TDSR Calculation** - Total Debt Servicing Ratio monitoring
-- ✅ **CPF Usage** - Track CPF allocation for down payment and monthly payments
+## ✨ Features
 
-### User Profile Management
-- Age-based loan tenure validation (max 30 years or until age 65)
-- Monthly household income tracking
-- CPF available for down payment
-- Buyer profile selection (affects ABSD rates)
+### 💰 Comprehensive Financial Analysis
+- **Property Types**: HDB and Private Condo support
+- **Down Payment Calculator**: Automatic minimum requirement validation
+- **Loan Calculations**: Monthly payments, total interest, payment schedules
+- **Stamp Duty**: Buyer's Stamp Duty (BSD) and Additional Buyer's Stamp Duty (ABSD)
+- **TDSR Validation**: Total Debt Servicing Ratio checks
+- **CPF Usage**: Track CPF Ordinary Account utilization
+- **Age-Based Restrictions**: Automatic loan tenure limits (loan must end by age 65)
 
-### Loan Features
-- **HDB Loan** - Fixed rate (CPF OA + 0.1%)
-- **Bank Loans** - Fixed or floating rates (SORA-based)
-- Flexible loan tenure (1-30 years with age validation)
-- Real-time interest rate updates
+### 🆕 Scenario Comparison System (New!)
+- **Save Unlimited Scenarios**: Store different property configurations for comparison
+- **Side-by-Side Analysis**: Compare 2-10 scenarios simultaneously
+- **Dual View Modes**:
+  - **Classic View** 🎴: Visual card-based comparison with Best Value badges
+  - **Compact View** 📋: Detailed table for metric-by-metric analysis
+- **Smart Highlights**: Trophy indicators (🏆) automatically mark best values:
+  - Lowest monthly payment
+  - Lowest down payment
+  - Lowest total interest
+  - Lowest total cash needed
+  - Lowest TDSR ratio
+  - Lowest total payment (price + interest)
+- **CSV Export**: Download comparison data for Excel/Sheets analysis
+- **Persistent Storage**: Scenarios saved in browser localStorage
 
-### Visualizations & Reports
-- 📊 **Payment Breakdown Chart** - Principal vs Interest over time
-- 📅 **Monthly Payment Schedule** - Detailed amortization table
-- 💾 **CSV Export** - Download complete payment schedule
-- 📈 **Progress Tracking** - Visual down payment progress bar
+### 📊 Interactive Visualizations
+- **Payment Schedule Table**: Monthly breakdown of principal vs. interest
+- **Cumulative Chart**: Visual representation of payment over time (Chart.js)
+- **Export to CSV**: Download payment schedules for external analysis
 
-## 🎯 Key Highlights
+### 🎯 Smart Validation
+- **Real-time Updates**: Loan tenure validation updates instantly with age/property changes
+- **Visual Feedback**: Red text warnings when age limits loan options
+- **Decimal Prevention**: Auto-corrects non-integer values (e.g., 30.5 years → 30 years)
+- **Custom Modals**: Sandboxed-environment compatible dialogs
 
-### Singapore-Specific Regulations
-- **LTV Limits**: 75% for first $1M, 45% for amounts above
-- **HDB Rules**: 80% LTV for HDB with lower down payment requirements
-- **ABSD Rates**: 
-  - 0% - SC 1st property
-  - 20% - SC 2nd property
-  - 30% - SC 3rd+ property
-  - 5% - PR 1st property
-  - 30% - PR 2nd+ property
-  - 60% - Foreigners
-  - 35-65% - Entities
+### 🎨 User Experience
+- **Single-File Application**: No installation or backend required
+- **Mobile Responsive**: Works on all devices
+- **Dark Mode Ready**: Clean purple gradient design
+- **Standardized UI**: Consistent button colors and hover effects throughout
 
-### Smart Validations
-- Minimum down payment enforcement (20% HDB, 25% Condo)
-- Maximum loan tenure based on age
-- Real-time TDSR warnings (55% limit)
-- Automatic thousand separators for all currency fields
+---
 
-## 🚀 Live Demo
+## 🚀 Quick Start
 
-[View Live Demo](https://vasant98.github.io/propertyplan-sg/)
+### Use Online
+Simply visit: [https://vasanttan.github.io/propertyplan-sg/](https://vasanttan.github.io/propertyplan-sg/)
 
-## 💻 Technologies Used
+### Use Offline
+1. Download `index.html`
+2. Open in any modern browser (Chrome, Firefox, Safari, Edge)
+3. No installation needed!
 
-- **HTML5** - Semantic markup
-- **CSS3** - Modern styling with gradients and transitions
-- **Vanilla JavaScript** - No dependencies required
-- **Chart.js** - Interactive data visualizations
-- **Responsive Design** - Works on desktop, tablet, and mobile
+---
+
+## 📖 How to Use
+
+### Basic Calculation
+1. **Enter Your Profile**
+   - Age (affects maximum loan tenure)
+   - Monthly household income
+   - CPF available and monthly contributions
+   - Buyer profile (SC 1st property, PR, Foreigner, etc.)
+
+2. **Enter Property Details**
+   - Property type (HDB or Condo)
+   - Property price
+   - Down payment percentage (minimum 25% for resale condo)
+   - Loan tenure (max 30 years or until age 65)
+   - Interest rate (HDB: 2.6%, Bank: typically 2.6-3.5%)
+
+3. **Review Results**
+   - Monthly payment and TDSR ratio
+   - Stamp duties (BSD + ABSD)
+   - Total cash needed upfront
+   - Payment schedule and cumulative chart
+
+### Scenario Comparison
+1. **Save First Scenario**
+   - Fill in details for your first option
+   - Click "Calculate Payment Plan"
+   - Click "💾 Save Scenario"
+   - Name it (e.g., "25% Down - 25 Years")
+
+2. **Save More Scenarios**
+   - Adjust parameters (try 30% down payment, or 20-year loan)
+   - Calculate and save each variation
+   - Save as many as you want!
+
+3. **Compare Side-by-Side**
+   - Click "📊 Compare Scenarios"
+   - Select which scenarios to compare (2-10)
+   - Toggle between Classic 🎴 or Compact 📋 view
+   - Trophy indicators (🏆) show best values
+   - Export to CSV for deeper analysis
+
+### Example Comparisons
+- **Down Payment Strategy**: 25% vs 30% vs 35%
+- **Loan Tenure**: 20 years vs 25 years vs 30 years
+- **Property Options**: Different properties at different price points
+- **Interest Rates**: Fixed vs Floating rate comparison
+
+---
+
+## 💡 Use Cases
+
+### 1. First-Time Buyers
+"Should I buy HDB or Condo? What can I afford?"
+- Compare HDB ($500K) vs Condo ($1.2M)
+- See actual monthly payments and cash needed
+- Understand ABSD implications
+
+### 2. Down Payment Planning
+"Is it better to put 25% or 30% down?"
+- Compare scenarios with different down payments
+- See trade-off: lower monthly payment vs more cash upfront
+- Calculate total interest savings
+
+### 3. Loan Tenure Strategy
+"Should I take a 20-year or 30-year loan?"
+- Compare different loan tenures
+- Shorter = higher monthly payment but less total interest
+- Longer = lower monthly payment but more total interest
+
+### 4. Upgrading Decisions
+"Can I afford to upgrade from HDB to Condo?"
+- Model current HDB and target Condo
+- Factor in ABSD for 2nd property
+- See if TDSR limits approve your plan
+
+### 5. Age Impact Analysis
+"I'm 40 years old - how does this limit my loan?"
+- See automatic tenure restrictions (max 25 years)
+- Compare with younger buyer scenarios
+- Plan refinancing strategies
+
+---
+
+## 🏆 What Makes PropertyPlan SG Special?
+
+### Singapore-Specific Calculations
+- **BSD**: 2024 progressive rates (up to $1.5M+)
+- **ABSD**: Accurate rates for SC/PR/Foreigner, 1st/2nd/3rd properties
+- **TDSR**: 55% limit validation
+- **CPF Rules**: OA usage for down payment and monthly
+- **HDB Loans**: 2.6% concessionary rate
+- **Age Limits**: Loan must end by 65
+
+### Comparison That Matters
+Unlike simple calculators, PropertyPlan SG lets you:
+- Save unlimited scenarios
+- Compare them side-by-side
+- See which option wins each metric
+- Export data for further analysis
+- Share comparisons with family/advisors
+
+### No Backend Required
+- Everything runs in your browser
+- No data sent to servers
+- Completely private
+- Works offline after first load
+- No signup or login needed
+
+---
+
+## 🛠️ Technical Details
+
+### Built With
+- **HTML5**: Single-file architecture
+- **CSS3**: Purple gradient design, responsive layout
+- **Vanilla JavaScript**: No frameworks, lightweight
+- **Chart.js**: Interactive payment visualizations
+- **localStorage**: Persistent scenario storage
+
+### Browser Compatibility
+- ✅ Chrome 90+
+- ✅ Firefox 88+
+- ✅ Safari 14+
+- ✅ Edge 90+
+- ✅ Mobile browsers (iOS Safari, Chrome Mobile)
+
+### File Size
+- Single HTML file: ~103 KB
+- With Chart.js CDN: ~200 KB total
+- Loads in < 1 second
+
+---
 
 ## 📸 Screenshots
 
-### User Profile Section
+### Main Calculator
 ![User Profile](screenshots/user-profile.png)
-
-### Purchase Details
 ![Purchase Details](screenshots/purchase-details.png)
-
-### Financial Summary
 ![Financial Summary](screenshots/financial-summary.png)
+
+### Scenario Comparison
+![Classic View](screenshots/comparison-classic-view.png)
+![Compact View](screenshots/comparison-compact-view.png)
 
 ### Payment Schedule
 ![Payment Schedule](screenshots/payment-schedule.png)
 
-## 🛠️ Installation & Usage
+---
 
-### Option 1: Direct Use
-1. Download `PropertyPlan_SG.html`
-2. Open in any modern web browser
-3. No installation required!
+## 🗺️ Roadmap
 
-### Option 2: Local Server
-```bash
-# Using Python
-python -m http.server 8000
-
-# Using Node.js
-npx http-server
-
-# Then visit http://localhost:8000
-```
-
-### Option 3: Deploy to GitHub Pages
-1. Fork this repository
-2. Go to Settings → Pages
-3. Select branch and deploy
-4. Access at `https://yourusername.github.io/propertyplan-sg`
-
-## 📖 How to Use
-
-1. **Enter Your Profile**
-   - Input your age, income, and CPF available
-   - Select your buyer profile (SC/PR/Foreigner)
-
-2. **Configure Property Details**
-   - Choose property type (HDB or Condo)
-   - Enter property price
-   - Adjust down payment percentage
-   - Set loan tenure and interest rate
-
-3. **Review Financial Summary**
-   - Check total cash needed
-   - Review ABSD and BSD amounts
-   - Verify TDSR ratio is within limits
-
-4. **Analyze Payment Schedule**
-   - View payment breakdown chart
-   - Examine monthly payment schedule
-   - Export to CSV for detailed analysis
-
-## 🧮 Calculation Formulas
-
-### Monthly Mortgage Payment
-```
-M = P × [r(1 + r)^n] / [(1 + r)^n - 1]
-
-Where:
-M = Monthly payment
-P = Principal loan amount
-r = Monthly interest rate
-n = Total number of payments
-```
-
-### Buyer's Stamp Duty (BSD)
-```
-First $180,000: 1%
-Next $180,000: 2%
-Next $640,000: 3%
-Above $1,000,000: 4%
-```
-
-### TDSR (Total Debt Servicing Ratio)
-```
-TDSR = (Monthly Debt Obligations / Gross Monthly Income) × 100%
-Limit: 55%
-```
-
-## 🎨 Features in Detail
-
-### Dynamic Property Type Switching
-- Automatically adjusts LTV limits
-- Updates available loan types
-- Recalculates ABSD based on property type
-- Changes down payment requirements
-
-### Real-Time Validation
-- Down payment warnings if below minimum
-- Loan tenure caps based on age
-- Visual indicators for invalid inputs
-- Helpful tooltips and remarks
-
-### Export Functionality
-- Generate complete payment schedule
-- CSV format compatible with Excel/Google Sheets
-- Includes all months from start to end
-- Ready for financial planning tools
-
-## 🔮 Future Enhancements
-
-- [ ] Multi-language support (English, Chinese, Malay, Tamil)
-- [ ] Save/load scenarios feature
-- [ ] Comparison mode (compare multiple properties)
+### Planned Features
 - [ ] Rental yield calculator
-- [ ] Property appreciation projections
-- [ ] Integration with actual property listings
-- [ ] Mobile app version
-- [ ] Dark mode toggle
+- [ ] Property appreciation estimator
+- [ ] Refinancing comparison tool
+- [ ] Monthly expense tracker integration
+- [ ] PDF report export
+- [ ] Share comparison via URL
 
-## 📜 License
-
-MIT License - Feel free to use this project for personal or commercial purposes.
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the project
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📧 Contact
-
-Vasant Tan - [LinkedIn](https://www.linkedin.com/in/vasanttan/)
-
-Project Link: [https://github.com/vasanttan/propertyplan-sg](https://github.com/vasanttan/propertyplan-sg)
-
-## 🙏 Acknowledgments
-
-- Singapore's Monetary Authority (MAS) for regulatory guidelines
-- HDB and IRAS for stamp duty information
-- Chart.js for data visualization
-- Singapore property market resources
-
-## ⚖️ Disclaimer
-
-This calculator is for educational and planning purposes only. Always consult with licensed financial advisors, property agents, and lawyers before making property purchase decisions. Regulations and rates may change - verify current rules with official sources.
+### Ideas Welcome!
+Have suggestions? Open an issue or contribute!
 
 ---
 
-Made with ❤️ for Singapore property buyers
+## 🤝 Contributing
+
+Contributions are welcome! Here's how:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'feat: Add AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+### Development Setup
+```bash
+# Clone the repo
+git clone https://github.com/vasanttan/propertyplan-sg.git
+
+# Open in browser
+# Just open index.html - no build process needed!
+```
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+### What This Means
+✅ Free to use for personal or commercial purposes  
+✅ Free to modify and customize  
+✅ Free to redistribute  
+✅ No warranty provided  
+
+---
+
+## 🙏 Acknowledgments
+
+- Singapore property regulations and stamp duty schedules
+- Chart.js for beautiful visualizations
+- GitHub Pages for free hosting
+- The Singapore property buyer community for feedback
+
+---
+
+## 📞 Contact & Support
+
+- **GitHub Issues**: [Report bugs or request features](https://github.com/vasanttan/propertyplan-sg/issues)
+- **Vasant Tan** - [LinkedIn](https://www.linkedin.com/in/vasanttan/)
+
+---
+
+## ⚖️ Disclaimer
+
+PropertyPlan SG is a tool for estimation and planning purposes only. It does not constitute financial advice. Always:
+- Verify calculations with official sources
+- Consult with licensed financial advisors
+- Check current regulations (BSD/ABSD rates may change)
+- Confirm with banks for actual loan terms
+- Seek professional legal advice for property transactions
+
+Stamp duty rates, TDSR limits, and property regulations may change. This tool reflects information accurate as of January 2025.
+
+---
+
+## 📊 Project Stats
+
+![GitHub stars](https://img.shields.io/github/stars/vasanttan/propertyplan-sg?style=social)
+![GitHub forks](https://img.shields.io/github/forks/vasanttan/propertyplan-sg?style=social)
+![GitHub issues](https://img.shields.io/github/issues/vasanttan/propertyplan-sg)
+![GitHub license](https://img.shields.io/github/license/vasanttan/propertyplan-sg)
+
+---
+
+**Made with ❤️ for Singapore property buyers**
+
+🏠 **Start planning your property purchase today:** [https://vasanttan.github.io/propertyplan-sg/](https://vasanttan.github.io/propertyplan-sg/)
