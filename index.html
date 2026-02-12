@@ -278,19 +278,737 @@
         }
 
         .btn-export {
-            background: #28a745;
+            background: #34c759;
             color: white;
             border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-size: 0.9em;
-            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.95em;
+            font-weight: 500;
             cursor: pointer;
-            transition: background 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(52, 199, 89, 0.2);
         }
 
         .btn-export:hover {
-            background: #218838;
+            background: #2fb350;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(52, 199, 89, 0.3);
+        }
+
+        /* Save & Compare Styles */
+        .save-compare-section {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .btn-save, .btn-compare {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-save {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-save:hover:not(:disabled) {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .btn-save:disabled {
+            background: #e0e0e0;
+            color: #999;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-compare {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-compare:hover {
+            background: #f0f2ff;
+        }
+
+        .btn-compare:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .saved-scenarios {
+            margin-top: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            border: 2px dashed #667eea;
+        }
+
+        .saved-scenarios h3 {
+            color: #667eea;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .scenario-item {
+            background: white;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid #667eea;
+            transition: all 0.2s;
+        }
+
+        .scenario-item:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transform: translateX(3px);
+        }
+
+        .scenario-info {
+            flex: 1;
+        }
+
+        .scenario-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .scenario-details {
+            font-size: 0.85em;
+            color: #666;
+        }
+
+        .scenario-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-icon {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            transition: all 0.2s;
+        }
+
+        .btn-icon:hover {
+            background: #f0f0f0;
+        }
+
+        .btn-load {
+            color: #667eea;
+        }
+
+        .btn-delete {
+            color: #dc3545;
+        }
+
+        .btn-select {
+            color: #28a745;
+        }
+
+        /* Comparison Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            overflow: auto;
+        }
+
+        .modal.active {
+            display: block;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 2% auto;
+            padding: 30px;
+            border-radius: 12px;
+            width: 95%;
+            max-width: 1400px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        /* View Toggle Button */
+        .view-toggle {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: #f5f5f7;
+            border-radius: 12px;
+        }
+
+        .scenario-select-card {
+            background: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            user-select: none;
+        }
+
+        .scenario-select-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+
+        .scenario-select-card input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .scenario-select-card span {
+            cursor: pointer;
+        }
+
+        .scenario-select-card.selected {
+            border-color: #667eea;
+            background: #f0f2ff;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        @media (min-width: 768px) {
+            .comparison-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .comparison-grid.three-col {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .comparison-grid.four-col {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        .comparison-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid #d2d2d7;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .comparison-card:hover {
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            transform: translateY(-4px);
+        }
+
+        .comparison-card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .comparison-card-title {
+            font-size: 1.4em;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .comparison-card-subtitle {
+            font-size: 0.95em;
+            opacity: 0.9;
+        }
+
+        .comparison-card-price {
+            font-size: 2em;
+            font-weight: 700;
+            margin: 15px 0 5px 0;
+        }
+
+        .comparison-card-body {
+            padding: 30px 20px;
+        }
+
+        .comparison-section {
+            margin-bottom: 30px;
+        }
+
+        .comparison-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .comparison-section-title {
+            font-size: 0.85em;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #86868b;
+            margin-bottom: 15px;
+            letter-spacing: 0.5px;
+        }
+
+        .comparison-feature {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f5f5f7;
+        }
+
+        .comparison-feature:last-child {
+            border-bottom: none;
+        }
+
+        .comparison-feature-label {
+            font-size: 0.95em;
+            color: #1d1d1f;
+            font-weight: 500;
+        }
+
+        .comparison-feature-value {
+            font-size: 0.95em;
+            color: #1d1d1f;
+            font-weight: 600;
+            text-align: right;
+        }
+
+        .comparison-feature-value.best {
+            color: #34c759;
+            position: relative;
+        }
+
+        .comparison-feature-value.best::before {
+            content: "🏆";
+            display: inline-block;
+            margin-right: 4px;
+            font-weight: bold;
+        }
+
+        .comparison-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #34c759;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .comparison-monthly-payment {
+            background: #f5f5f7;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .comparison-monthly-label {
+            font-size: 0.85em;
+            color: #86868b;
+            margin-bottom: 5px;
+        }
+
+        .comparison-monthly-value {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #1d1d1f;
+        }
+
+        .no-scenarios-selected {
+            text-align: center;
+            padding: 60px 20px;
+            color: #86868b;
+        }
+
+        .no-scenarios-selected-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .no-scenarios-selected p {
+            font-size: 1.1em;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .modal-header h2 {
+            display: none; /* Using inline header now */
+        }
+
+        /* View Toggle Button */
+        .view-toggle {
+            display: flex;
+            gap: 5px;
+            background: #f5f5f7;
+            padding: 4px;
+            border-radius: 8px;
+            margin-right: 10px;
+        }
+
+        .comparison-selector {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: #f5f5f7;
+            border-radius: 12px;
+        }
+
+        .view-toggle-btn {
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .view-toggle-btn:hover {
+            color: #333;
+        }
+
+        .view-toggle-btn.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+
+        .close:hover {
+            background: #f0f0f0;
+            color: #000;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .comparison-table th {
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .comparison-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .comparison-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .comparison-table .row-header {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .highlight-best {
+            background: #d4edda !important;
+            font-weight: 600;
+        }
+
+        .scenario-checkbox {
+            margin-right: 8px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        /* Custom Input Modal */
+        .input-modal {
+            display: none;
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .input-modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .input-modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .input-modal-header {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .input-modal-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .input-modal-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .input-modal-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-modal-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .input-modal-btn.primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .input-modal-btn.primary:hover {
+            background: #5568d3;
+        }
+
+        .input-modal-btn.secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .input-modal-btn.secondary:hover {
+            background: #d0d0d0;
+        }
+
+        /* Alert Modal */
+        .alert-modal {
+            display: none;
+            position: fixed;
+            z-index: 1002;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .alert-modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .alert-modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        .alert-modal-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .alert-modal-message {
+            font-size: 1.1em;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .alert-modal-btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            background: #667eea;
+            color: white;
+            transition: all 0.2s;
+        }
+
+        .alert-modal-btn:hover {
+            background: #5568d3;
+        }
+
+        /* Confirm Modal */
+        .confirm-modal {
+            display: none;
+            position: fixed;
+            z-index: 1002;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .confirm-modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .confirm-modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        .confirm-modal-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .confirm-modal-message {
+            font-size: 1.1em;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .confirm-modal-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .confirm-modal-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .confirm-modal-btn.danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .confirm-modal-btn.danger:hover {
+            background: #c82333;
+        }
+
+        .confirm-modal-btn.cancel {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .confirm-modal-btn.cancel:hover {
+            background: #d0d0d0;
         }
     </style>
 </head>
@@ -308,7 +1026,7 @@
                 
                 <div class="input-group">
                     <label>Your Current Age</label>
-                    <input type="number" id="age" value="35" min="21" max="64" oninput="updateMaxTenure()">
+                    <input type="number" id="age" value="35" min="21" max="64" step="1" oninput="updateMaxTenure()">
                     <small style="color: #666; font-size: 0.85em; margin-top: 5px; display: block;">
                         📅 Used to calculate maximum loan tenure
                     </small>
@@ -382,7 +1100,7 @@
                     </div>
                     <div class="input-group">
                         <label>Loan Tenure (Years)</label>
-                        <input type="number" id="loanTenure" value="25" min="1" max="30" oninput="validateTenure()">
+                        <input type="number" id="loanTenure" value="25" min="1" max="30" step="1" oninput="validateTenure()" onblur="validateTenure()">
                         <small style="color: #666; font-size: 0.85em; margin-top: 5px; display: block;" id="tenureRemark">
                             ⏱️ Max: 30 years or up to age 65 (whichever is shorter)
                         </small>
@@ -408,6 +1126,11 @@
                 </div>
 
                 <button class="btn" onclick="calculate()">Calculate Payment Plan</button>
+
+                <div class="save-compare-section">
+                    <button class="btn-save" id="btnSaveScenario" onclick="saveScenario()">💾 Save Scenario</button>
+                    <button class="btn-compare" id="btnCompare" onclick="openCompareModal()" disabled>📊 Compare Scenarios</button>
+                </div>
 
                 <div class="info-badge" id="cashCpfInfo">
                     💡 5% must be paid in cash, remaining down payment can use CPF
@@ -471,6 +1194,16 @@
                 <div class="info-badge">
                     📊 TDSR limit: 55% of gross monthly income
                 </div>
+
+                <div class="saved-scenarios" id="savedScenariosPanel">
+                    <h3>📁 Saved Scenarios</h3>
+                    <div id="savedScenariosList">
+                        <div class="empty-state" style="padding: 20px;">
+                            <div class="empty-state-icon">💾</div>
+                            <p style="color: #999; font-size: 0.9em;">No saved scenarios yet. Click "Save Scenario" to start comparing properties!</p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Payment Breakdown Chart -->
@@ -511,6 +1244,50 @@
                         </select>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Comparison Modal -->
+    <div id="comparisonModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📊 Compare Property Scenarios</h2>
+                <button class="close" onclick="closeCompareModal()">&times;</button>
+            </div>
+            <div id="comparisonContent"></div>
+        </div>
+    </div>
+
+    <!-- Input Modal -->
+    <div id="inputModal" class="input-modal">
+        <div class="input-modal-content">
+            <div class="input-modal-header">💾 Save Scenario</div>
+            <input type="text" id="scenarioNameInput" class="input-modal-input" placeholder="Enter scenario name...">
+            <div class="input-modal-buttons">
+                <button class="input-modal-btn secondary" onclick="closeInputModal()">Cancel</button>
+                <button class="input-modal-btn primary" onclick="confirmSaveScenario()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Modal -->
+    <div id="alertModal" class="alert-modal">
+        <div class="alert-modal-content">
+            <div class="alert-modal-icon" id="alertIcon">✅</div>
+            <div class="alert-modal-message" id="alertMessage"></div>
+            <button class="alert-modal-btn" onclick="closeAlertModal()">OK</button>
+        </div>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div id="confirmModal" class="confirm-modal">
+        <div class="confirm-modal-content">
+            <div class="confirm-modal-icon">⚠️</div>
+            <div class="confirm-modal-message" id="confirmMessage"></div>
+            <div class="confirm-modal-buttons">
+                <button class="confirm-modal-btn cancel" onclick="closeConfirmModal()">Cancel</button>
+                <button class="confirm-modal-btn danger" onclick="confirmAction()">Delete</button>
             </div>
         </div>
     </div>
@@ -647,7 +1424,15 @@
         }
 
         function updateMaxTenure() {
-            const age = parseInt(document.getElementById('age').value) || 35;
+            const ageInput = document.getElementById('age');
+            let age = parseFloat(ageInput.value) || 35;
+            
+            // Round age to integer if decimal
+            if (!Number.isInteger(age)) {
+                age = Math.round(age);
+                ageInput.value = age;
+            }
+            
             const maxAge = 65;
             const maxTenureByAge = Math.max(1, maxAge - age);
             const absoluteMaxTenure = 30;
@@ -655,17 +1440,22 @@
             
             const tenureInput = document.getElementById('loanTenure');
             const tenureRemark = document.getElementById('tenureRemark');
+            const currentValue = parseInt(tenureInput.value);
             
             // Update max attribute
             tenureInput.max = maxTenure;
             
             // Update the current value if it exceeds the max
-            if (parseInt(tenureInput.value) > maxTenure) {
+            if (currentValue > maxTenure) {
                 tenureInput.value = maxTenure;
+                tenureInput.style.borderColor = '#d9534f';
+            } else {
+                tenureInput.style.borderColor = '#e0e0e0';
             }
             
             // Update remark
-            if (maxTenureByAge <= absoluteMaxTenure) {
+            // Show red when age is the limiting factor (age-based max < standard 30)
+            if (maxTenureByAge < absoluteMaxTenure) {
                 tenureRemark.innerHTML = `⏱️ Max: ${maxTenure} years (based on age ${age}, loan must end by 65)`;
                 tenureRemark.style.color = '#d9534f';
             } else {
@@ -675,16 +1465,46 @@
         }
 
         function validateTenure() {
+            const age = parseInt(document.getElementById('age').value) || 35;
             const tenureInput = document.getElementById('loanTenure');
-            const maxTenure = parseInt(tenureInput.max);
-            const currentValue = parseInt(tenureInput.value);
+            const tenureRemark = document.getElementById('tenureRemark');
+            const maxAge = 65;
+            const maxTenureByAge = Math.max(1, maxAge - age);
+            const absoluteMaxTenure = 30;
+            const maxTenure = Math.min(maxTenureByAge, absoluteMaxTenure);
+            let currentValue = parseFloat(tenureInput.value);
             
-            if (currentValue > maxTenure) {
-                tenureInput.value = maxTenure;
+            // Round to nearest integer if decimal (handles 30.5 → 31, then validates to 30)
+            if (!Number.isInteger(currentValue)) {
+                currentValue = Math.round(currentValue);
+                tenureInput.value = currentValue;
             }
             
-            if (currentValue < 1) {
+            // Update max attribute to ensure it's current
+            tenureInput.max = maxTenure;
+            
+            // Validate and correct value if needed
+            if (currentValue > maxTenure) {
+                tenureInput.value = maxTenure;
+                tenureInput.style.borderColor = '#d9534f';
+            } else if (currentValue < 1) {
                 tenureInput.value = 1;
+                tenureInput.style.borderColor = '#d9534f';
+            } else if (isNaN(currentValue)) {
+                tenureInput.value = maxTenure;
+                tenureInput.style.borderColor = '#d9534f';
+            } else {
+                tenureInput.style.borderColor = '#e0e0e0';
+            }
+            
+            // Update remark with current information
+            // Show red when age is the limiting factor (age-based max < standard 30)
+            if (maxTenureByAge < absoluteMaxTenure) {
+                tenureRemark.innerHTML = `⏱️ Max: ${maxTenure} years (based on age ${age}, loan must end by 65)`;
+                tenureRemark.style.color = '#d9534f';
+            } else {
+                tenureRemark.innerHTML = `⏱️ Max: ${maxTenure} years (standard maximum)`;
+                tenureRemark.style.color = '#666';
             }
         }
 
@@ -795,6 +1615,7 @@
             
             updateLoanType();
             validateDownPayment();
+            updateMaxTenure(); // Update tenure validation when property type changes
             updateSubtitle();
             updateABSD();
         }
@@ -896,6 +1717,16 @@
 
             // Update chart
             updateChart(loanAmount, totalInterest, totalPayments, monthlyRate, monthlyPayment);
+            
+            // Enable save button now that calculation is complete
+            enableSaveButton();
+        }
+
+        function enableSaveButton() {
+            const btnSave = document.getElementById('btnSaveScenario');
+            if (btnSave) {
+                btnSave.disabled = false;
+            }
         }
 
         function generatePaymentSchedule(loanAmount, monthlyRate, monthlyPayment, totalPayments) {
@@ -1042,6 +1873,717 @@
         calculate();
         updateMaxTenure();
         validateDownPayment();
+
+        // Saved Scenarios Management
+        let savedScenarios = JSON.parse(localStorage.getItem('propertyScenarios') || '[]');
+        let currentDeleteId = null;
+        let comparisonViewMode = localStorage.getItem('comparisonViewMode') || 'cards'; // 'cards' or 'table'
+
+        // Custom Modal Functions
+        function showInputModal(callback) {
+            const modal = document.getElementById('inputModal');
+            const input = document.getElementById('scenarioNameInput');
+            input.value = `Scenario ${savedScenarios.length + 1}`;
+            modal.classList.add('active');
+            input.focus();
+            input.select();
+            
+            // Store callback for later
+            window.inputModalCallback = callback;
+            
+            // Handle Enter key
+            input.onkeypress = function(e) {
+                if (e.key === 'Enter') {
+                    confirmSaveScenario();
+                }
+            };
+        }
+
+        function closeInputModal() {
+            document.getElementById('inputModal').classList.remove('active');
+            window.inputModalCallback = null;
+        }
+
+        function confirmSaveScenario() {
+            const input = document.getElementById('scenarioNameInput');
+            const value = input.value.trim();
+            if (value && window.inputModalCallback) {
+                window.inputModalCallback(value);
+            }
+            closeInputModal();
+        }
+
+        function showAlert(message, icon = '✅') {
+            const modal = document.getElementById('alertModal');
+            document.getElementById('alertMessage').textContent = message;
+            document.getElementById('alertIcon').textContent = icon;
+            modal.classList.add('active');
+        }
+
+        function closeAlertModal() {
+            document.getElementById('alertModal').classList.remove('active');
+        }
+
+        function showConfirm(message, callback) {
+            const modal = document.getElementById('confirmModal');
+            document.getElementById('confirmMessage').textContent = message;
+            modal.classList.add('active');
+            window.confirmModalCallback = callback;
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').classList.remove('active');
+            window.confirmModalCallback = null;
+        }
+
+        function confirmAction() {
+            if (window.confirmModalCallback) {
+                window.confirmModalCallback();
+            }
+            closeConfirmModal();
+        }
+
+        function saveScenario() {
+            // Better validation: Check if calculation has been performed
+            // by verifying the monthly payment is a valid number
+            const monthlyPaymentEl = document.getElementById('monthlyPayment');
+            const monthlyPaymentText = monthlyPaymentEl ? monthlyPaymentEl.textContent : '';
+            const monthlyPaymentValue = parseFloat(monthlyPaymentText.replace(/[S$,]/g, ''));
+            
+            // Check if we have a valid calculated value (not NaN and greater than 0)
+            if (isNaN(monthlyPaymentValue) || monthlyPaymentValue <= 0) {
+                showAlert('Please click "Calculate Payment Plan" first before saving!', '⚠️');
+                return;
+            }
+
+            showInputModal((scenarioName) => {
+                if (!scenarioName) return;
+
+                try {
+                    const scenario = {
+                        id: Date.now(),
+                        name: scenarioName,
+                        timestamp: new Date().toISOString(),
+                        data: {
+                            // User Profile
+                            age: parseInt(document.getElementById('age').value),
+                            monthlyIncome: getNumericValue(document.getElementById('monthlyIncome')),
+                            cpfAvailable: getNumericValue(document.getElementById('cpfAvailable')),
+                            monthlyCPF: getNumericValue(document.getElementById('monthlyCPF')),
+                            buyerProfile: document.getElementById('buyerProfile').value,
+                            
+                            // Purchase Details
+                            propertyType: document.getElementById('propertyType').value,
+                            propertyPrice: getNumericValue(document.getElementById('propertyPrice')),
+                            downPaymentPercent: parseFloat(document.getElementById('downPaymentPercent').value),
+                            loanTenure: parseFloat(document.getElementById('loanTenure').value),
+                            interestRate: parseFloat(document.getElementById('interestRate').value),
+                            loanType: document.getElementById('loanType').value,
+                        },
+                        results: {
+                            downPayment: parseFloat(document.getElementById('downPaymentAmount').textContent.replace(/[S$,]/g, '')),
+                            loanAmount: parseFloat(document.getElementById('loanAmount').textContent.replace(/[S$,]/g, '')),
+                            monthlyPayment: monthlyPaymentValue,
+                            totalInterest: parseFloat(document.getElementById('totalInterest').textContent.replace(/[S$,]/g, '')),
+                            stampDuty: parseFloat(document.getElementById('stampDuty').textContent.replace(/[S$,]/g, '')),
+                            absdAmount: parseFloat(document.getElementById('absdAmount').textContent.replace(/[S$,]/g, '')),
+                            totalStampDuty: parseFloat(document.getElementById('totalStampDuty').textContent.replace(/[S$,]/g, '')),
+                            cashNeeded: parseFloat(document.getElementById('cashNeeded').textContent.replace(/[S$,]/g, '')),
+                            tdsrRatio: parseFloat(document.getElementById('tdsrRatio').textContent.replace(/%/g, ''))
+                        }
+                    };
+
+                    savedScenarios.push(scenario);
+                    localStorage.setItem('propertyScenarios', JSON.stringify(savedScenarios));
+                    
+                    updateSavedScenariosList();
+                    updateCompareButton();
+                    
+                    // Scroll to saved scenarios section
+                    document.getElementById('savedScenariosPanel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    
+                    showAlert(`Scenario "${scenarioName}" saved successfully!`, '✅');
+                } catch (error) {
+                    console.error('Error saving scenario:', error);
+                    showAlert('Error saving scenario. Please try again.', '❌');
+                }
+            });
+        }
+
+        function updateSavedScenariosList() {
+            const panel = document.getElementById('savedScenariosPanel');
+            const list = document.getElementById('savedScenariosList');
+            
+            if (savedScenarios.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state" style="padding: 20px;">
+                        <div class="empty-state-icon">💾</div>
+                        <p style="color: #999; font-size: 0.9em;">No saved scenarios yet. Click "Save Scenario" to start comparing properties!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            panel.style.display = 'block';
+            
+            list.innerHTML = savedScenarios.map(scenario => {
+                const propertyTypeLabel = scenario.data.propertyType === 'hdb' ? 'HDB' : 'Condo';
+                return `
+                    <div class="scenario-item">
+                        <div class="scenario-info">
+                            <div class="scenario-name">${scenario.name}</div>
+                            <div class="scenario-details">
+                                ${propertyTypeLabel} • ${formatCurrency(scenario.data.propertyPrice)} • 
+                                Monthly: ${formatCurrency(scenario.results.monthlyPayment)}
+                            </div>
+                        </div>
+                        <div class="scenario-actions">
+                            <button class="btn-icon btn-load" onclick="loadScenario(${scenario.id})" title="Load">
+                                📂 Load
+                            </button>
+                            <button class="btn-icon btn-delete" onclick="deleteScenario(${scenario.id})" title="Delete">
+                                🗑️ Delete
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function loadScenario(id) {
+            const scenario = savedScenarios.find(s => s.id === id);
+            if (!scenario) return;
+
+            // Load User Profile
+            document.getElementById('age').value = scenario.data.age;
+            document.getElementById('monthlyIncome').value = scenario.data.monthlyIncome.toLocaleString('en-SG');
+            document.getElementById('cpfAvailable').value = scenario.data.cpfAvailable.toLocaleString('en-SG');
+            document.getElementById('monthlyCPF').value = scenario.data.monthlyCPF.toLocaleString('en-SG');
+            document.getElementById('buyerProfile').value = scenario.data.buyerProfile;
+
+            // Load Purchase Details
+            document.getElementById('propertyType').value = scenario.data.propertyType;
+            document.getElementById('propertyPrice').value = scenario.data.propertyPrice.toLocaleString('en-SG');
+            document.getElementById('downPaymentPercent').value = scenario.data.downPaymentPercent;
+            document.getElementById('loanTenure').value = scenario.data.loanTenure;
+            document.getElementById('interestRate').value = scenario.data.interestRate;
+            document.getElementById('loanType').value = scenario.data.loanType;
+
+            // Update dependent fields
+            updatePropertyType();
+            updateMaxTenure();
+            validateDownPayment();
+            calculate();
+
+            showAlert(`Loaded scenario: ${scenario.name}`, '✅');
+        }
+
+        function deleteScenario(id) {
+            const scenario = savedScenarios.find(s => s.id === id);
+            if (!scenario) return;
+
+            showConfirm(`Are you sure you want to delete "${scenario.name}"?`, () => {
+                savedScenarios = savedScenarios.filter(s => s.id !== id);
+                localStorage.setItem('propertyScenarios', JSON.stringify(savedScenarios));
+                
+                updateSavedScenariosList();
+                updateCompareButton();
+                
+                showAlert('Scenario deleted successfully!', '🗑️');
+            });
+        }
+
+        function updateCompareButton() {
+            const btnCompare = document.getElementById('btnCompare');
+            btnCompare.disabled = savedScenarios.length < 2;
+        }
+
+        function openCompareModal() {
+            if (savedScenarios.length < 2) {
+                showAlert('Please save at least 2 scenarios to compare.', 'ℹ️');
+                return;
+            }
+
+            const modal = document.getElementById('comparisonModal');
+            const content = document.getElementById('comparisonContent');
+
+            // Generate streamlined comparison with PropertyPlan SG branding
+            content.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #e0e0e0;">
+                    <div>
+                        <h2 style="margin: 0; color: #667eea; font-size: 1.8em;">🏠 PropertyPlan SG</h2>
+                        <p style="margin: 5px 0 0 0; color: #666; font-size: 0.95em;">Compare Property Scenarios</p>
+                    </div>
+                    <div class="view-toggle">
+                        <button class="view-toggle-btn ${comparisonViewMode === 'cards' ? 'active' : ''}" onclick="switchComparisonView('cards')">
+                            <span>🎴</span> Classic
+                        </button>
+                        <button class="view-toggle-btn ${comparisonViewMode === 'table' ? 'active' : ''}" onclick="switchComparisonView('table')">
+                            <span>📋</span> Compact
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="comparison-selector">
+                    ${savedScenarios.map((s, index) => {
+                        const propertyType = s.data.propertyType === 'hdb' ? 'HDB' : 'Condo';
+                        return `
+                            <label class="scenario-select-card ${index < 3 ? 'selected' : ''}" for="scenario-${s.id}">
+                                <input type="checkbox" class="scenario-checkbox" id="scenario-${s.id}" value="${s.id}" 
+                                       ${index < 3 ? 'checked' : ''} onchange="updateComparison(event)">
+                                <span><strong>${s.name}</strong> · ${propertyType} · ${formatCurrency(s.data.propertyPrice)}</span>
+                            </label>
+                        `;
+                    }).join('')}
+                </div>
+                
+                <div id="comparisonCardsContainer"></div>
+                
+                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
+                    <button class="btn-export" onclick="exportComparison()">
+                        <span style="font-size: 1.2em;">📥</span> Export to CSV
+                    </button>
+                </div>
+            `;
+
+            modal.classList.add('active');
+            updateComparison();
+        }
+
+        function switchComparisonView(mode) {
+            comparisonViewMode = mode;
+            localStorage.setItem('comparisonViewMode', mode);
+            
+            // Update button states
+            document.querySelectorAll('.view-toggle-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.closest('.view-toggle-btn').classList.add('active');
+            
+            // Refresh comparison
+            updateComparison();
+        }
+
+        function exportComparison() {
+            const checkboxes = document.querySelectorAll('.scenario-checkbox:checked');
+            const selectedIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
+            const selectedScenarios = savedScenarios.filter(s => selectedIds.includes(s.id));
+
+            if (selectedScenarios.length === 0) {
+                showAlert('Please select at least one scenario to export.', 'ℹ️');
+                return;
+            }
+
+            const propertyTypeLabels = {
+                'hdb': 'HDB Flat',
+                'condo': 'Private Condo'
+            };
+
+            const buyerProfileLabels = {
+                'sc_first': 'SC - 1st Property',
+                'sc_second': 'SC - 2nd Property',
+                'sc_third': 'SC - 3rd+ Property',
+                'pr_first': 'PR - 1st Property',
+                'pr_second': 'PR - 2nd+ Property',
+                'foreigner': 'Foreigner',
+                'entity': 'Entity'
+            };
+
+            // Build CSV content
+            let csv = 'PropertyPlan SG - Scenario Comparison\n';
+            csv += 'Generated: ' + new Date().toLocaleString() + '\n\n';
+            
+            // Header row with scenario names
+            csv += 'Metric,' + selectedScenarios.map(s => s.name).join(',') + '\n';
+            
+            // Property Details
+            csv += '\nProperty Details\n';
+            csv += 'Property Type,' + selectedScenarios.map(s => propertyTypeLabels[s.data.propertyType]).join(',') + '\n';
+            csv += 'Property Price,' + selectedScenarios.map(s => s.data.propertyPrice).join(',') + '\n';
+            csv += 'Buyer Profile,' + selectedScenarios.map(s => buyerProfileLabels[s.data.buyerProfile]).join(',') + '\n';
+            
+            // Loan Details
+            csv += '\nLoan Details\n';
+            csv += 'Down Payment %,' + selectedScenarios.map(s => s.data.downPaymentPercent + '%').join(',') + '\n';
+            csv += 'Down Payment Amount,' + selectedScenarios.map(s => s.results.downPayment).join(',') + '\n';
+            csv += 'Loan Amount,' + selectedScenarios.map(s => s.results.loanAmount).join(',') + '\n';
+            csv += 'Loan Tenure (years),' + selectedScenarios.map(s => s.data.loanTenure).join(',') + '\n';
+            csv += 'Interest Rate,' + selectedScenarios.map(s => s.data.interestRate + '%').join(',') + '\n';
+            
+            // Monthly Costs
+            csv += '\nMonthly Costs\n';
+            csv += 'Monthly Payment,' + selectedScenarios.map(s => s.results.monthlyPayment.toFixed(2)).join(',') + '\n';
+            csv += 'TDSR Ratio,' + selectedScenarios.map(s => s.results.tdsrRatio.toFixed(1) + '%').join(',') + '\n';
+            
+            // Upfront Costs
+            csv += '\nUpfront Costs\n';
+            csv += 'Buyer\'s Stamp Duty (BSD),' + selectedScenarios.map(s => s.results.stampDuty).join(',') + '\n';
+            csv += 'Additional BSD (ABSD),' + selectedScenarios.map(s => s.results.absdAmount).join(',') + '\n';
+            csv += 'Total Cash Needed,' + selectedScenarios.map(s => s.results.cashNeeded).join(',') + '\n';
+            
+            // Total Costs
+            csv += '\nTotal Costs\n';
+            csv += 'Total Interest Paid,' + selectedScenarios.map(s => s.results.totalInterest.toFixed(2)).join(',') + '\n';
+            csv += 'Total Payment (Price + Interest),' + selectedScenarios.map(s => (s.data.propertyPrice + s.results.totalInterest).toFixed(2)).join(',') + '\n';
+            
+            // Best Values Summary
+            csv += '\nBest Values (Lowest)\n';
+            const monthlyPayments = selectedScenarios.map(s => s.results.monthlyPayment);
+            const downPayments = selectedScenarios.map(s => s.results.downPayment);
+            const totalInterests = selectedScenarios.map(s => s.results.totalInterest);
+            const cashNeeded = selectedScenarios.map(s => s.results.cashNeeded);
+            const tdsrRatios = selectedScenarios.map(s => s.results.tdsrRatio);
+            const totalCosts = selectedScenarios.map(s => s.data.propertyPrice + s.results.totalInterest);
+            
+            csv += 'Best Monthly Payment,' + selectedScenarios.map(s => s.results.monthlyPayment === Math.min(...monthlyPayments) ? '✓' : '').join(',') + '\n';
+            csv += 'Best Down Payment,' + selectedScenarios.map(s => s.results.downPayment === Math.min(...downPayments) ? '✓' : '').join(',') + '\n';
+            csv += 'Best Total Interest,' + selectedScenarios.map(s => s.results.totalInterest === Math.min(...totalInterests) ? '✓' : '').join(',') + '\n';
+            csv += 'Best Cash Needed,' + selectedScenarios.map(s => s.results.cashNeeded === Math.min(...cashNeeded) ? '✓' : '').join(',') + '\n';
+            csv += 'Best TDSR Ratio,' + selectedScenarios.map(s => s.results.tdsrRatio === Math.min(...tdsrRatios) ? '✓' : '').join(',') + '\n';
+            csv += 'Best Total Payment,' + selectedScenarios.map(s => (s.data.propertyPrice + s.results.totalInterest) === Math.min(...totalCosts) ? '✓' : '').join(',') + '\n';
+
+            // Create download link
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            const timestamp = new Date().toISOString().slice(0, 10);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `propertyplan_sg_comparison_${timestamp}.csv`);
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showAlert('Comparison exported successfully!', '✅');
+        }
+
+        function toggleScenarioCard(card) {
+            const checkbox = card.querySelector('input[type="checkbox"]');
+            checkbox.checked = !checkbox.checked;
+            card.classList.toggle('selected', checkbox.checked);
+            updateComparison();
+        }
+
+        function closeCompareModal() {
+            const modal = document.getElementById('comparisonModal');
+            modal.classList.remove('active');
+        }
+
+        function updateComparison(event) {
+            if (event) {
+                event.stopPropagation();
+                // Toggle selected class on parent label
+                const checkbox = event.target;
+                const label = checkbox.closest('.scenario-select-card');
+                if (label) {
+                    label.classList.toggle('selected', checkbox.checked);
+                }
+            }
+            
+            const checkboxes = document.querySelectorAll('.scenario-checkbox:checked');
+            const selectedIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
+            const selectedScenarios = savedScenarios.filter(s => selectedIds.includes(s.id));
+
+            const container = document.getElementById('comparisonCardsContainer');
+
+            if (selectedScenarios.length === 0) {
+                container.innerHTML = `
+                    <div class="no-scenarios-selected">
+                        <div class="no-scenarios-selected-icon">📊</div>
+                        <p>Select at least one scenario to compare</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Render based on view mode
+            if (comparisonViewMode === 'table') {
+                renderTableView(selectedScenarios, container);
+            } else {
+                renderCardsView(selectedScenarios, container);
+            }
+        }
+
+        function renderCardsView(selectedScenarios, container) {
+            // Determine grid class based on number of scenarios
+            let gridClass = '';
+            if (selectedScenarios.length === 3) gridClass = 'three-col';
+            if (selectedScenarios.length >= 4) gridClass = 'four-col';
+
+            // Find best values for highlighting
+            const monthlyPayments = selectedScenarios.map(s => s.results.monthlyPayment);
+            const totalInterests = selectedScenarios.map(s => s.results.totalInterest);
+            const cashNeeded = selectedScenarios.map(s => s.results.cashNeeded);
+            const tdsrRatios = selectedScenarios.map(s => s.results.tdsrRatio);
+            const totalCosts = selectedScenarios.map(s => s.data.propertyPrice + s.results.totalInterest);
+            const downPayments = selectedScenarios.map(s => s.results.downPayment);
+            
+            const bestMonthly = Math.min(...monthlyPayments);
+            const bestInterest = Math.min(...totalInterests);
+            const bestCash = Math.min(...cashNeeded);
+            const bestTdsr = Math.min(...tdsrRatios);
+            const bestTotalCost = Math.min(...totalCosts);
+            const bestDownPayment = Math.min(...downPayments); // Lower down payment is better (more leverage)
+
+            const propertyTypeLabels = {
+                'hdb': 'HDB Flat',
+                'condo': 'Private Condo'
+            };
+
+            const html = `
+                <div class="comparison-grid ${gridClass}">
+                    ${selectedScenarios.map(scenario => {
+                        const propertyType = propertyTypeLabels[scenario.data.propertyType];
+                        const totalCost = scenario.data.propertyPrice + scenario.results.totalInterest;
+                        const isBestMonthly = scenario.results.monthlyPayment === bestMonthly;
+                        const isBestInterest = scenario.results.totalInterest === bestInterest;
+                        const isBestCash = scenario.results.cashNeeded === bestCash;
+                        const isBestTdsr = scenario.results.tdsrRatio === bestTdsr;
+                        const isBestTotalCost = totalCost === bestTotalCost;
+                        const isBestDownPayment = scenario.results.downPayment === bestDownPayment;
+                        
+                        // Count "best" badges
+                        const bestCount = [isBestMonthly, isBestInterest, isBestCash, isBestTdsr, isBestTotalCost, isBestDownPayment].filter(Boolean).length;
+                        
+                        return `
+                            <div class="comparison-card">
+                                ${bestCount >= 2 ? '<div class="comparison-badge">Best Value</div>' : ''}
+                                
+                                <div class="comparison-card-header">
+                                    <div class="comparison-card-title">${scenario.name}</div>
+                                    <div class="comparison-card-subtitle">${propertyType}</div>
+                                    <div class="comparison-card-price">${formatCurrency(scenario.data.propertyPrice)}</div>
+                                </div>
+                                
+                                <div class="comparison-card-body">
+                                    <div class="comparison-monthly-payment">
+                                        <div class="comparison-monthly-label">Monthly Payment</div>
+                                        <div class="comparison-monthly-value ${isBestMonthly ? 'best' : ''}">${formatCurrency(scenario.results.monthlyPayment)}</div>
+                                    </div>
+                                    
+                                    <div class="comparison-section">
+                                        <div class="comparison-section-title">Loan Details</div>
+                                        <div class="comparison-feature">
+                                            <span class="comparison-feature-label">Down Payment</span>
+                                            <span class="comparison-feature-value ${isBestDownPayment ? 'best' : ''}">${scenario.data.downPaymentPercent}% · ${formatCurrency(scenario.results.downPayment)}</span>
+                                        </div>
+                                        <div class="comparison-feature">
+                                            <span class="comparison-feature-label">Loan Amount</span>
+                                            <span class="comparison-feature-value">${formatCurrency(scenario.results.loanAmount)}</span>
+                                        </div>
+                                        <div class="comparison-feature">
+                                            <span class="comparison-feature-label">Interest Rate</span>
+                                            <span class="comparison-feature-value">${scenario.data.interestRate}%</span>
+                                        </div>
+                                        <div class="comparison-feature">
+                                            <span class="comparison-feature-label">Loan Tenure</span>
+                                            <span class="comparison-feature-value">${scenario.data.loanTenure} years</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="comparison-section">
+                                        <div class="comparison-section-title">Financial Impact</div>
+                                        <div class="comparison-feature">
+                                            <span class="comparison-feature-label">Total Interest</span>
+                                            <span class="comparison-feature-value ${isBestInterest ? 'best' : ''}">${formatCurrency(scenario.results.totalInterest)}</span>
+                                        </div>
+                                        <div class="comparison-feature">
+                                            <span class="comparison-feature-label">Total Payment</span>
+                                            <span class="comparison-feature-value ${isBestTotalCost ? 'best' : ''}">${formatCurrency(totalCost)}</span>
+                                        </div>
+                                        <div class="comparison-feature" style="font-size: 0.85em; color: #86868b; padding-left: 10px;">
+                                            <span class="comparison-feature-label">└ Property Price</span>
+                                            <span class="comparison-feature-value">${formatCurrency(scenario.data.propertyPrice)}</span>
+                                        </div>
+                                        <div class="comparison-feature" style="font-size: 0.85em; color: #86868b; padding-left: 10px; border-bottom: none;">
+                                            <span class="comparison-feature-label">└ Interest Paid</span>
+                                            <span class="comparison-feature-value">${formatCurrency(scenario.results.totalInterest)}</span>
+                                        </div>
+                                        <div class="comparison-feature">
+                                            <span class="comparison-feature-label">TDSR Ratio</span>
+                                            <span class="comparison-feature-value ${isBestTdsr ? 'best' : ''}">${scenario.results.tdsrRatio.toFixed(1)}%</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="comparison-section">
+                                        <div class="comparison-section-title">Upfront Costs</div>
+                                        <div class="comparison-feature">
+                                            <span class="comparison-feature-label">BSD</span>
+                                            <span class="comparison-feature-value">${formatCurrency(scenario.results.stampDuty)}</span>
+                                        </div>
+                                        <div class="comparison-feature">
+                                            <span class="comparison-feature-label">ABSD</span>
+                                            <span class="comparison-feature-value">${formatCurrency(scenario.results.absdAmount)}</span>
+                                        </div>
+                                        <div class="comparison-feature">
+                                            <span class="comparison-feature-label">Total Cash Needed</span>
+                                            <span class="comparison-feature-value ${isBestCash ? 'best' : ''}">${formatCurrency(scenario.results.cashNeeded)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        function renderTableView(selectedScenarios, container) {
+            const propertyTypeLabels = {
+                'hdb': 'HDB Flat',
+                'condo': 'Private Condo'
+            };
+
+            const buyerProfileLabels = {
+                'sc_first': 'SC - 1st Property',
+                'sc_second': 'SC - 2nd Property',
+                'sc_third': 'SC - 3rd+ Property',
+                'pr_first': 'PR - 1st Property',
+                'pr_second': 'PR - 2nd+ Property',
+                'foreigner': 'Foreigner',
+                'entity': 'Entity'
+            };
+
+            const html = `
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            ${selectedScenarios.map(s => `<th>${s.name}</th>`).join('')}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="${selectedScenarios.length + 1}" class="row-header">Property Details</td></tr>
+                        <tr>
+                            <td>Property Type</td>
+                            ${selectedScenarios.map(s => `<td>${propertyTypeLabels[s.data.propertyType]}</td>`).join('')}
+                        </tr>
+                        <tr>
+                            <td>Property Price</td>
+                            ${selectedScenarios.map(s => `<td>${formatCurrency(s.data.propertyPrice)}</td>`).join('')}
+                        </tr>
+                        <tr>
+                            <td>Buyer Profile</td>
+                            ${selectedScenarios.map(s => `<td>${buyerProfileLabels[s.data.buyerProfile]}</td>`).join('')}
+                        </tr>
+                        
+                        <tr><td colspan="${selectedScenarios.length + 1}" class="row-header">Loan Details</td></tr>
+                        <tr>
+                            <td>Down Payment %</td>
+                            ${selectedScenarios.map(s => `<td>${s.data.downPaymentPercent}%</td>`).join('')}
+                        </tr>
+                        <tr>
+                            <td><strong>Down Payment Amount</strong></td>
+                            ${highlightBest(selectedScenarios.map(s => s.results.downPayment), false)}
+                        </tr>
+                        <tr>
+                            <td>Loan Amount</td>
+                            ${selectedScenarios.map(s => `<td>${formatCurrency(s.results.loanAmount)}</td>`).join('')}
+                        </tr>
+                        <tr>
+                            <td>Loan Tenure</td>
+                            ${selectedScenarios.map(s => `<td>${s.data.loanTenure} years</td>`).join('')}
+                        </tr>
+                        <tr>
+                            <td>Interest Rate</td>
+                            ${selectedScenarios.map(s => `<td>${s.data.interestRate}%</td>`).join('')}
+                        </tr>
+                        
+                        <tr><td colspan="${selectedScenarios.length + 1}" class="row-header">Monthly Costs</td></tr>
+                        <tr>
+                            <td><strong>Monthly Payment</strong></td>
+                            ${highlightBest(selectedScenarios.map(s => s.results.monthlyPayment), false)}
+                        </tr>
+                        <tr>
+                            <td>TDSR Ratio</td>
+                            ${highlightBest(selectedScenarios.map(s => s.results.tdsrRatio), false, '%')}
+                        </tr>
+                        
+                        <tr><td colspan="${selectedScenarios.length + 1}" class="row-header">Upfront Costs</td></tr>
+                        <tr>
+                            <td>Buyer's Stamp Duty (BSD)</td>
+                            ${selectedScenarios.map(s => `<td>${formatCurrency(s.results.stampDuty)}</td>`).join('')}
+                        </tr>
+                        <tr>
+                            <td>Additional BSD (ABSD)</td>
+                            ${selectedScenarios.map(s => `<td>${formatCurrency(s.results.absdAmount)}</td>`).join('')}
+                        </tr>
+                        <tr>
+                            <td><strong>Total Cash Needed</strong></td>
+                            ${highlightBest(selectedScenarios.map(s => s.results.cashNeeded), false)}
+                        </tr>
+                        
+                        <tr><td colspan="${selectedScenarios.length + 1}" class="row-header">Total Costs</td></tr>
+                        <tr>
+                            <td><strong>Total Interest Paid</strong></td>
+                            ${highlightBest(selectedScenarios.map(s => s.results.totalInterest), false)}
+                        </tr>
+                        <tr>
+                            <td><strong>Total Payment (Price + Interest)</strong></td>
+                            ${highlightBest(selectedScenarios.map(s => s.data.propertyPrice + s.results.totalInterest), false)}
+                        </tr>
+                    </tbody>
+                </table>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        function highlightBest(values, higherIsBetter = true, suffix = '') {
+            const bestValue = higherIsBetter ? Math.max(...values) : Math.min(...values);
+            return values.map(v => {
+                const isBest = v === bestValue;
+                const displayValue = suffix ? `${v}${suffix}` : formatCurrency(v);
+                return `<td${isBest ? ' class="highlight-best"' : ''}>${displayValue}</td>`;
+            }).join('');
+        }
+
+        // Initialize on load
+        updateSavedScenariosList();
+        updateCompareButton();
+
+        // Close modals when clicking outside or pressing Escape
+        window.onclick = function(event) {
+            const comparisonModal = document.getElementById('comparisonModal');
+            const inputModal = document.getElementById('inputModal');
+            const alertModal = document.getElementById('alertModal');
+            const confirmModal = document.getElementById('confirmModal');
+            
+            if (event.target === comparisonModal) {
+                closeCompareModal();
+            }
+            if (event.target === inputModal) {
+                closeInputModal();
+            }
+            if (event.target === alertModal) {
+                closeAlertModal();
+            }
+            if (event.target === confirmModal) {
+                closeConfirmModal();
+            }
+        }
+
+        // Keyboard support for modals
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeCompareModal();
+                closeInputModal();
+                closeAlertModal();
+                closeConfirmModal();
+            }
+            
+            // Enter key for alert modal
+            if (event.key === 'Enter') {
+                const alertModal = document.getElementById('alertModal');
+                if (alertModal.classList.contains('active')) {
+                    closeAlertModal();
+                }
+            }
+        });
     </script>
 </body>
 </html>
