@@ -151,6 +151,7 @@
             padding: 15px;
             border-radius: 8px;
             border-left: 4px solid #667eea;
+            margin-bottom: 8px; /* Reduced space between items */
         }
 
         .summary-item label {
@@ -1244,51 +1245,69 @@
                 <h2>Financial Summary</h2>
                 
                 <div class="summary-grid">
+                    
                     <div class="summary-item">
-                        <label>Down Payment</label>
+                        <label>💰 Down Payment</label>
                         <div class="value" id="downPaymentAmount">S$325,000</div>
                     </div>
                     <div class="summary-item">
-                        <label>Loan Amount</label>
+                        <label>🏦 Loan Amount</label>
                         <div class="value" id="loanAmount">S$975,000</div>
                     </div>
                     <div class="summary-item">
-                        <label>Monthly Payment</label>
+                        <label>💳 Monthly Payment</label>
                         <div class="value" id="monthlyPayment">S$4,350</div>
                     </div>
                     <div class="summary-item">
-                        <label>Total Interest</label>
+                        <label>📊 Total Interest</label>
                         <div class="value" id="totalInterest">S$330,000</div>
                     </div>
+                    
                     <div class="summary-item">
-                        <label>Buyer's Stamp Duty (BSD)</label>
+                        <label>📜 Buyer's Stamp Duty (BSD)</label>
                         <div class="value" id="stampDuty">S$43,600</div>
                     </div>
                     <div class="summary-item">
-                        <label>Additional BSD (ABSD)</label>
+                        <label>📋 Additional BSD (ABSD)</label>
                         <div class="value" id="absdAmount">S$0</div>
                     </div>
                     <div class="summary-item">
-                        <label>Total Stamp Duty</label>
+                        <label>📑 Total Stamp Duty</label>
                         <div class="value" id="totalStampDuty">S$43,600</div>
                     </div>
+                    
                     <div class="summary-item">
-                        <label>Total Cash Needed</label>
+                        <label>💵 Total Cash Needed</label>
                         <div class="value" id="cashNeeded">S$268,600</div>
+                        <div style="font-size: 0.75em; color: #999; margin-top: 3px;">Cash Down + BSD + ABSD</div>
                     </div>
                     <div class="summary-item">
-                        <label>TDSR Ratio</label>
+                        <label>💸 Remaining Cash Needed</label>
+                        <div class="value" id="remainingCashNeeded" style="color: #d9534f; font-weight: bold;">S$148,600</div>
+                        <div style="font-size: 0.75em; color: #999; margin-top: 3px;">After CPF & Savings</div>
+                    </div>
+                    <div class="summary-item">
+                        <label>🏢 Total Amount Needed</label>
+                        <div class="value" id="totalAmountNeeded">S$1,268,600</div>
+                        <div style="font-size: 0.75em; color: #999; margin-top: 3px;">Property + Duties</div>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <label>📈 TDSR Ratio</label>
                         <div class="value" id="tdsrRatio">29%</div>
                         <div id="tdsrWarning" style="font-size: 0.85em; margin-top: 5px; display: none;"></div>
                     </div>
                     <div class="summary-item">
-                        <label>Cash After CPF</label>
+                        <label>💴 Cash After CPF</label>
                         <div class="value" id="cashPayment">S$0</div>
                     </div>
                 </div>
 
                 <div class="input-group" style="margin-top: 20px;">
-                    <label>Down Payment Progress</label>
+                    <label>Upfront Payment Progress</label>
+                    <div style="font-size: 0.85em; color: #666; margin-bottom: 8px;">
+                        Track funding for down payment + stamp duties (BSD + ABSD)
+                    </div>
                     <div class="progress-bar-multi" id="progressBarMulti">
                         <div class="progress-segment progress-cpf" id="progressCPF" style="width: 30%;">
                             <span class="progress-label">CPF: 30%</span>
@@ -1842,6 +1861,7 @@
             const cpfUsedForDownPayment = Math.min(cpfAvailable, downPayment - minCashDownPayment);
             const cashForDownPayment = downPayment - cpfUsedForDownPayment;
             const totalCashNeeded = cashForDownPayment + totalStampDuty; // ABSD + BSD must be paid in cash
+            const totalAmountNeeded = propertyPrice + totalStampDuty; // Total including property price and all duties
 
             // Calculate TDSR
             const tdsrRatio = (monthlyPayment / monthlyIncome) * 100;
@@ -1863,6 +1883,7 @@
             document.getElementById('absdAmount').textContent = formatCurrency(absdAmount);
             document.getElementById('totalStampDuty').textContent = formatCurrency(totalStampDuty);
             document.getElementById('cashNeeded').textContent = formatCurrency(totalCashNeeded);
+            document.getElementById('totalAmountNeeded').textContent = formatCurrency(totalAmountNeeded);
             
             // Update TDSR with color coding
             const tdsrElement = document.getElementById('tdsrRatio');
@@ -1899,15 +1920,79 @@
             // Enable save button now that calculation is complete
             enableSaveButton();
             
-            // Update funding progress with new down payment amount
-            // Pass the calculated values directly to avoid timing issues
-            updateFundingProgress(downPayment, cpfAvailable);
+            // Update funding progress with total cash needed
+            // totalCashNeeded = cash portion of down payment + BSD + ABSD (all must be in cash)
+            updateFundingProgress(totalCashNeeded, cpfAvailable);
+            
+            // Update remaining cash needed display
+            updateRemainingCashNeeded(totalCashNeeded);
         }
 
         function enableSaveButton() {
             const btnSave = document.getElementById('btnSaveScenario');
             if (btnSave) {
                 btnSave.disabled = false;
+            }
+        }
+
+        function updateRemainingCashNeeded(totalCashNeededValue = null) {
+            try {
+                let totalCashNeeded;
+                
+                // Get total cash needed from parameter or DOM
+                if (totalCashNeededValue !== null) {
+                    totalCashNeeded = totalCashNeededValue;
+                } else {
+                    // Read from DOM
+                    const cashNeededElement = document.getElementById('cashNeeded');
+                    if (!cashNeededElement || !cashNeededElement.textContent) {
+                        return; // Skip if not calculated yet
+                    }
+                    const cashNeededText = cashNeededElement.textContent.replace(/[S$,]/g, '');
+                    totalCashNeeded = parseFloat(cashNeededText);
+                    if (isNaN(totalCashNeeded) || totalCashNeeded === 0) {
+                        return;
+                    }
+                }
+                
+                // Get CPF amount
+                const cpfInput = document.getElementById('cpfAvailable');
+                const cpfAmount = cpfInput ? getNumericValue(cpfInput) : 0;
+                
+                // Get all funding sources
+                let otherSourcesTotal = 0;
+                const container = document.getElementById('fundingSourcesContainer');
+                
+                if (container) {
+                    const sourceDivs = container.querySelectorAll('.funding-source-row');
+                    sourceDivs.forEach(sourceDiv => {
+                        const amountInput = sourceDiv.querySelector('[id^="fundingSourceAmount"]');
+                        if (amountInput) {
+                            const amount = getNumericValue(amountInput) || 0;
+                            otherSourcesTotal += amount;
+                        }
+                    });
+                }
+                
+                // Calculate remaining
+                const totalSaved = cpfAmount + otherSourcesTotal;
+                const remaining = Math.max(0, totalCashNeeded - totalSaved);
+                
+                // Update display
+                const remainingElement = document.getElementById('remainingCashNeeded');
+                if (remainingElement) {
+                    if (remaining === 0) {
+                        remainingElement.textContent = 'S$0';
+                        remainingElement.style.color = '#34c759'; // Green
+                        remainingElement.style.fontWeight = 'bold';
+                    } else {
+                        remainingElement.textContent = formatCurrency(remaining);
+                        remainingElement.style.color = '#d9534f'; // Red
+                        remainingElement.style.fontWeight = 'bold';
+                    }
+                }
+            } catch (error) {
+                console.error('Error updating remaining cash needed:', error);
             }
         }
 
@@ -2131,34 +2216,43 @@
             }
         }
 
-        function updateFundingProgress(downPaymentValue = null, cpfValue = null) {
+        function updateFundingProgress(totalUpfrontValue = null, cpfValue = null) {
             try {
                 // Use passed values or read from DOM
-                let downPayment, cpfAmount;
+                let totalUpfront, cpfAmount;
                 
-                if (downPaymentValue !== null && cpfValue !== null) {
+                if (totalUpfrontValue !== null && cpfValue !== null) {
                     // Values passed directly from calculate()
-                    downPayment = downPaymentValue;
+                    totalUpfront = totalUpfrontValue;
                     cpfAmount = cpfValue;
-                    console.log('Using passed values - CPF:', cpfAmount, 'Down Payment:', downPayment);
+                    console.log('Using passed values - CPF:', cpfAmount, 'Total Upfront (DP + BSD + ABSD):', totalUpfront);
                 } else {
                     // Read from DOM elements (when called from input changes)
+                    // Total Upfront = Down Payment + Total Stamp Duty
                     const downPaymentElement = document.getElementById('downPaymentAmount');
-                    if (!downPaymentElement || !downPaymentElement.textContent) {
+                    const stampDutyElement = document.getElementById('totalStampDuty');
+                    
+                    if (!downPaymentElement || !downPaymentElement.textContent || 
+                        !stampDutyElement || !stampDutyElement.textContent) {
                         return; // Skip if no calculation done yet
                     }
                     
                     const downPaymentText = downPaymentElement.textContent.replace(/[S$,]/g, '');
-                    downPayment = parseFloat(downPaymentText);
+                    const stampDutyText = stampDutyElement.textContent.replace(/[S$,]/g, '');
                     
-                    if (isNaN(downPayment) || downPayment === 0) {
+                    const downPayment = parseFloat(downPaymentText);
+                    const stampDuty = parseFloat(stampDutyText);
+                    
+                    if (isNaN(downPayment) || isNaN(stampDuty)) {
                         return;
                     }
+                    
+                    totalUpfront = downPayment + stampDuty;
                     
                     // Get CPF amount from input
                     const cpfInput = document.getElementById('cpfAvailable');
                     cpfAmount = cpfInput ? getNumericValue(cpfInput) : 0;
-                    console.log('Using DOM values - CPF:', cpfAmount, 'Down Payment:', downPayment);
+                    console.log('Using DOM values - CPF:', cpfAmount, 'Total Upfront (DP + BSD + ABSD):', totalUpfront);
                 }
                 
                 // Get all funding sources
@@ -2176,11 +2270,11 @@
                     });
                 }
                 
-                // Calculate percentages
+                // Calculate percentages based on total upfront amount (DP + BSD + ABSD)
                 const totalSaved = cpfAmount + otherSourcesTotal;
-                const cpfPercent = Math.min((cpfAmount / downPayment) * 100, 100);
-                const otherPercent = Math.min((otherSourcesTotal / downPayment) * 100, 100);
-                const totalPercent = Math.min((totalSaved / downPayment) * 100, 100);
+                const cpfPercent = Math.min((cpfAmount / totalUpfront) * 100, 100);
+                const otherPercent = Math.min((otherSourcesTotal / totalUpfront) * 100, 100);
+                const totalPercent = Math.min((totalSaved / totalUpfront) * 100, 100);
                 
                 console.log('Progress Update - CPF%:', cpfPercent.toFixed(1), 'Other%:', otherPercent.toFixed(1), 'Total%:', totalPercent.toFixed(1));
                 
@@ -2211,17 +2305,20 @@
                 // Update summary
                 const summary = document.getElementById('progressSummary');
                 if (summary) {
-                    const remainingAmount = Math.max(0, downPayment - totalSaved);
+                    const remainingAmount = Math.max(0, totalUpfront - totalSaved);
                     
                     if (totalPercent >= 100) {
-                        summary.innerHTML = `<strong style="color: #34c759;">✓ Fully Funded!</strong> Total: ${totalPercent.toFixed(0)}% (${formatCurrency(totalSaved)} / ${formatCurrency(downPayment)})`;
+                        summary.innerHTML = `<strong style="color: #34c759;">✓ Fully Funded!</strong> Total: ${totalPercent.toFixed(0)}% (${formatCurrency(totalSaved)} / ${formatCurrency(totalUpfront)})`;
                     } else {
-                        summary.innerHTML = `Total: ${totalPercent.toFixed(0)}% (${formatCurrency(totalSaved)} / ${formatCurrency(downPayment)}) • <span style="color: #d9534f;">Need: ${formatCurrency(remainingAmount)}</span>`;
+                        summary.innerHTML = `Total: ${totalPercent.toFixed(0)}% (${formatCurrency(totalSaved)} / ${formatCurrency(totalUpfront)}) • <span style="color: #d9534f;">Need: ${formatCurrency(remainingAmount)}</span>`;
                     }
                 }
             } catch (error) {
                 console.error('Error updating funding progress:', error);
             }
+            
+            // Also update remaining cash needed
+            updateRemainingCashNeeded();
         }
 
         // Calculate on page load
