@@ -232,6 +232,108 @@
 
         .progress-fill {
             height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            transition: width 0.5s;
+            border-radius: 15px 0 0 15px;
+        }
+
+        /* Multi-colored Progress Bar */
+        .progress-bar-multi {
+            width: 100%;
+            height: 35px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-top: 10px;
+            display: flex;
+            position: relative;
+        }
+
+        .progress-segment {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: width 0.5s;
+            position: relative;
+        }
+
+        .progress-segment .progress-label {
+            color: white;
+            font-weight: 600;
+            font-size: 0.85em;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            white-space: nowrap;
+        }
+
+        .progress-cpf {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .progress-sources {
+            background: #34c759;
+        }
+
+        /* Funding Sources Panel */
+        .funding-source-item {
+            margin-bottom: 15px;
+        }
+
+        .funding-source-item label {
+            font-weight: 500;
+            color: #333;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .funding-source-item input {
+            font-size: 0.95em;
+        }
+
+        .funding-source-row {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .funding-source-row input[type="text"] {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .funding-source-row input[type="text"]:first-child {
+            flex: 1;
+        }
+
+        .funding-source-row input[type="text"]:last-of-type {
+            flex: 1;
+        }
+
+        .funding-source-row button {
+            padding: 8px 12px;
+            background: #d9534f;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85em;
+            flex-shrink: 0;
+        }
+
+        .funding-source-row button:hover {
+            background: #c9302c;
+        }
             background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
             transition: width 0.3s;
             display: flex;
@@ -1177,6 +1279,7 @@
                     <div class="summary-item">
                         <label>TDSR Ratio</label>
                         <div class="value" id="tdsrRatio">29%</div>
+                        <div id="tdsrWarning" style="font-size: 0.85em; margin-top: 5px; display: none;"></div>
                     </div>
                     <div class="summary-item">
                         <label>Cash After CPF</label>
@@ -1186,8 +1289,65 @@
 
                 <div class="input-group" style="margin-top: 20px;">
                     <label>Down Payment Progress</label>
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="progressBar" style="width: 30%;">30%</div>
+                    <div class="progress-bar-multi" id="progressBarMulti">
+                        <div class="progress-segment progress-cpf" id="progressCPF" style="width: 30%;">
+                            <span class="progress-label">CPF: 30%</span>
+                        </div>
+                        <div class="progress-segment progress-sources" id="progressSources" style="width: 0%;">
+                            <span class="progress-label"></span>
+                        </div>
+                    </div>
+                    <div style="margin-top: 10px; font-size: 0.9em; color: #666;">
+                        <div id="progressSummary">Total: 30%</div>
+                    </div>
+                    
+                    <!-- Expandable Funding Sources -->
+                    <div style="margin-top: 15px;">
+                        <button type="button" onclick="toggleFundingSources()" style="background: none; border: none; color: #667eea; cursor: pointer; font-size: 0.9em; display: flex; align-items: center; gap: 5px; padding: 5px;">
+                            <span id="fundingToggleIcon">▶</span> Add Funding Sources
+                        </button>
+                        
+                        <div id="fundingSourcesPanel" style="display: none; margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 3px solid #667eea;">
+                            <h4 style="margin: 0 0 15px 0; font-size: 1em; color: #667eea;">💰 Additional Funding Sources</h4>
+                            
+                            <div style="margin-bottom: 15px; padding: 10px; background: white; border-radius: 4px; font-size: 0.85em; color: #666;">
+                                💡 Add other sources like cash savings, investments, gifts, bonuses, etc.
+                            </div>
+                            
+                            <!-- Funding Sources Container -->
+                            <div id="fundingSourcesContainer"></div>
+                            
+                            <button type="button" onclick="addFundingSource()" style="margin-top: 10px; padding: 8px 12px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85em;">
+                                + Add Funding Source
+                            </button>
+                            
+                            <!-- Templates -->
+                            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd;">
+                                <div style="font-size: 0.85em; color: #666; margin-bottom: 8px;">Quick Templates:</div>
+                                <div style="display: flex; flex-wrap: wrap; gap: 5px;">
+                                    <button type="button" onclick="addFundingSourceTemplate('Cash Savings')" style="padding: 4px 8px; background: white; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-size: 0.8em;">💵 Cash Savings</button>
+                                    <button type="button" onclick="addFundingSourceTemplate('Stock Investment')" style="padding: 4px 8px; background: white; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-size: 0.8em;">📈 Stock Investment</button>
+                                    <button type="button" onclick="addFundingSourceTemplate('Crypto Investment')" style="padding: 4px 8px; background: white; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-size: 0.8em;">₿ Crypto</button>
+                                    <button type="button" onclick="addFundingSourceTemplate('Parents Gift')" style="padding: 4px 8px; background: white; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-size: 0.8em;">🎁 Parents Gift</button>
+                                    <button type="button" onclick="addFundingSourceTemplate('Bonus')" style="padding: 4px 8px; background: white; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-size: 0.8em;">💰 Bonus</button>
+                                    <button type="button" onclick="addFundingSourceTemplate('Fixed Deposit')" style="padding: 4px 8px; background: white; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-size: 0.8em;">🏦 Fixed Deposit</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Legend -->
+                            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd;">
+                                <div style="font-size: 0.85em; color: #666;">
+                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+                                        <span style="width: 12px; height: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 2px;"></span>
+                                        <span>CPF Ordinary Account</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <span style="width: 12px; height: 12px; background: #34c759; border-radius: 2px;"></span>
+                                        <span>Other Funding Sources</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -1703,14 +1863,32 @@
             document.getElementById('absdAmount').textContent = formatCurrency(absdAmount);
             document.getElementById('totalStampDuty').textContent = formatCurrency(totalStampDuty);
             document.getElementById('cashNeeded').textContent = formatCurrency(totalCashNeeded);
-            document.getElementById('tdsrRatio').textContent = tdsrRatio.toFixed(1) + '%';
+            
+            // Update TDSR with color coding
+            const tdsrElement = document.getElementById('tdsrRatio');
+            const tdsrWarning = document.getElementById('tdsrWarning');
+            tdsrElement.textContent = tdsrRatio.toFixed(1) + '%';
+            
+            // Highlight TDSR based on 55% limit
+            if (tdsrRatio > 55) {
+                tdsrElement.style.color = '#d9534f'; // Red - exceeds limit
+                tdsrElement.style.fontWeight = 'bold';
+                tdsrWarning.style.display = 'block';
+                tdsrWarning.style.color = '#d9534f';
+                tdsrWarning.innerHTML = '⚠️ <strong>Exceeds 55% TDSR limit!</strong> Loan may not be approved.';
+            } else if (tdsrRatio > 50) {
+                tdsrElement.style.color = '#f0ad4e'; // Orange - getting close
+                tdsrElement.style.fontWeight = 'bold';
+                tdsrWarning.style.display = 'block';
+                tdsrWarning.style.color = '#f0ad4e';
+                tdsrWarning.innerHTML = '⚠️ Close to 55% limit. Consider reducing loan amount.';
+            } else {
+                tdsrElement.style.color = '#5cb85c'; // Green - safe zone
+                tdsrElement.style.fontWeight = 'normal';
+                tdsrWarning.style.display = 'none';
+            }
+            
             document.getElementById('cashPayment').textContent = formatCurrency(cashForDownPayment);
-
-            // Update progress bar
-            const savedAmount = cpfAvailable; // This could be connected to another input
-            const progressPercent = Math.min((savedAmount / downPayment) * 100, 100);
-            document.getElementById('progressBar').style.width = progressPercent + '%';
-            document.getElementById('progressBar').textContent = progressPercent.toFixed(0) + '%';
 
             // Generate payment schedule
             generatePaymentSchedule(loanAmount, monthlyRate, monthlyPayment, totalPayments);
@@ -1720,6 +1898,10 @@
             
             // Enable save button now that calculation is complete
             enableSaveButton();
+            
+            // Update funding progress with new down payment amount
+            // Pass the calculated values directly to avoid timing issues
+            updateFundingProgress(downPayment, cpfAvailable);
         }
 
         function enableSaveButton() {
@@ -1867,6 +2049,179 @@
                     }
                 }
             });
+        }
+
+        // Funding Sources Management
+        let fundingSourceCounter = 0;
+        let fundingSourcesExpanded = false;
+
+        function toggleFundingSources() {
+            fundingSourcesExpanded = !fundingSourcesExpanded;
+            const panel = document.getElementById('fundingSourcesPanel');
+            const icon = document.getElementById('fundingToggleIcon');
+            
+            if (fundingSourcesExpanded) {
+                panel.style.display = 'block';
+                icon.textContent = '▼';
+            } else {
+                panel.style.display = 'none';
+                icon.textContent = '▶';
+            }
+        }
+
+        function addFundingSource() {
+            fundingSourceCounter++;
+            const container = document.getElementById('fundingSourcesContainer');
+            
+            const sourceDiv = document.createElement('div');
+            sourceDiv.className = 'funding-source-row';
+            sourceDiv.id = `fundingSource${fundingSourceCounter}`;
+            
+            sourceDiv.innerHTML = `
+                <input type="text" 
+                       id="fundingSourceName${fundingSourceCounter}" 
+                       placeholder="Source name (e.g., Cash Savings, Stock, Gift)" 
+                       style="flex: 1;">
+                <input type="text" 
+                       id="fundingSourceAmount${fundingSourceCounter}" 
+                       placeholder="Amount" 
+                       oninput="formatNumberInput(this); updateFundingProgress();" 
+                       style="flex: 1;">
+                <button type="button" onclick="removeFundingSource(${fundingSourceCounter})">Remove</button>
+            `;
+            
+            container.appendChild(sourceDiv);
+        }
+
+        function addFundingSourceTemplate(templateName) {
+            fundingSourceCounter++;
+            const container = document.getElementById('fundingSourcesContainer');
+            
+            const sourceDiv = document.createElement('div');
+            sourceDiv.className = 'funding-source-row';
+            sourceDiv.id = `fundingSource${fundingSourceCounter}`;
+            
+            sourceDiv.innerHTML = `
+                <input type="text" 
+                       id="fundingSourceName${fundingSourceCounter}" 
+                       value="${templateName}"
+                       placeholder="Source name" 
+                       style="flex: 1;">
+                <input type="text" 
+                       id="fundingSourceAmount${fundingSourceCounter}" 
+                       placeholder="Amount" 
+                       oninput="formatNumberInput(this); updateFundingProgress();" 
+                       style="flex: 1;">
+                <button type="button" onclick="removeFundingSource(${fundingSourceCounter})">Remove</button>
+            `;
+            
+            container.appendChild(sourceDiv);
+            
+            // Focus on amount field for immediate input
+            setTimeout(() => {
+                document.getElementById(`fundingSourceAmount${fundingSourceCounter}`).focus();
+            }, 100);
+        }
+
+        function removeFundingSource(id) {
+            const element = document.getElementById(`fundingSource${id}`);
+            if (element) {
+                element.remove();
+                updateFundingProgress();
+            }
+        }
+
+        function updateFundingProgress(downPaymentValue = null, cpfValue = null) {
+            try {
+                // Use passed values or read from DOM
+                let downPayment, cpfAmount;
+                
+                if (downPaymentValue !== null && cpfValue !== null) {
+                    // Values passed directly from calculate()
+                    downPayment = downPaymentValue;
+                    cpfAmount = cpfValue;
+                    console.log('Using passed values - CPF:', cpfAmount, 'Down Payment:', downPayment);
+                } else {
+                    // Read from DOM elements (when called from input changes)
+                    const downPaymentElement = document.getElementById('downPaymentAmount');
+                    if (!downPaymentElement || !downPaymentElement.textContent) {
+                        return; // Skip if no calculation done yet
+                    }
+                    
+                    const downPaymentText = downPaymentElement.textContent.replace(/[S$,]/g, '');
+                    downPayment = parseFloat(downPaymentText);
+                    
+                    if (isNaN(downPayment) || downPayment === 0) {
+                        return;
+                    }
+                    
+                    // Get CPF amount from input
+                    const cpfInput = document.getElementById('cpfAvailable');
+                    cpfAmount = cpfInput ? getNumericValue(cpfInput) : 0;
+                    console.log('Using DOM values - CPF:', cpfAmount, 'Down Payment:', downPayment);
+                }
+                
+                // Get all funding sources
+                let otherSourcesTotal = 0;
+                const container = document.getElementById('fundingSourcesContainer');
+                
+                if (container) {
+                    const sourceDivs = container.querySelectorAll('.funding-source-row');
+                    sourceDivs.forEach(sourceDiv => {
+                        const amountInput = sourceDiv.querySelector('[id^="fundingSourceAmount"]');
+                        if (amountInput) {
+                            const amount = getNumericValue(amountInput) || 0;
+                            otherSourcesTotal += amount;
+                        }
+                    });
+                }
+                
+                // Calculate percentages
+                const totalSaved = cpfAmount + otherSourcesTotal;
+                const cpfPercent = Math.min((cpfAmount / downPayment) * 100, 100);
+                const otherPercent = Math.min((otherSourcesTotal / downPayment) * 100, 100);
+                const totalPercent = Math.min((totalSaved / downPayment) * 100, 100);
+                
+                console.log('Progress Update - CPF%:', cpfPercent.toFixed(1), 'Other%:', otherPercent.toFixed(1), 'Total%:', totalPercent.toFixed(1));
+                
+                // Update progress bar segments
+                const cpfSegment = document.getElementById('progressCPF');
+                const sourcesSegment = document.getElementById('progressSources');
+                
+                if (cpfSegment) {
+                    cpfSegment.style.width = cpfPercent + '%';
+                    const cpfLabel = cpfSegment.querySelector('.progress-label');
+                    if (cpfLabel) {
+                        cpfLabel.textContent = cpfPercent > 5 ? `CPF: ${cpfPercent.toFixed(0)}%` : '';
+                    }
+                } else {
+                    console.warn('CPF segment not found!');
+                }
+                
+                if (sourcesSegment) {
+                    sourcesSegment.style.width = otherPercent + '%';
+                    const sourcesLabel = sourcesSegment.querySelector('.progress-label');
+                    if (sourcesLabel) {
+                        sourcesLabel.textContent = otherPercent > 5 ? `Other: ${otherPercent.toFixed(0)}%` : '';
+                    }
+                } else {
+                    console.warn('Sources segment not found!');
+                }
+                
+                // Update summary
+                const summary = document.getElementById('progressSummary');
+                if (summary) {
+                    const remainingAmount = Math.max(0, downPayment - totalSaved);
+                    
+                    if (totalPercent >= 100) {
+                        summary.innerHTML = `<strong style="color: #34c759;">✓ Fully Funded!</strong> Total: ${totalPercent.toFixed(0)}% (${formatCurrency(totalSaved)} / ${formatCurrency(downPayment)})`;
+                    } else {
+                        summary.innerHTML = `Total: ${totalPercent.toFixed(0)}% (${formatCurrency(totalSaved)} / ${formatCurrency(downPayment)}) • <span style="color: #d9534f;">Need: ${formatCurrency(remainingAmount)}</span>`;
+                    }
+                }
+            } catch (error) {
+                console.error('Error updating funding progress:', error);
+            }
         }
 
         // Calculate on page load
