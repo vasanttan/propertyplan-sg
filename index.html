@@ -249,10 +249,25 @@
             height: 35px;
             background: #e0e0e0;
             border-radius: 15px;
-            overflow: hidden;
+            overflow: visible; /* Changed from hidden to allow tooltips */
             margin-top: 10px;
+            margin-bottom: 50px; /* Add space for tooltips */
             display: flex;
             position: relative;
+        }
+
+        /* Inner wrapper to clip segments but not tooltips */
+        .progress-bar-multi::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 15px;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: -1;
         }
 
         .progress-segment {
@@ -260,8 +275,22 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: width 0.5s;
+            transition: width 0.5s, opacity 0.3s;
             position: relative;
+            cursor: pointer;
+        }
+
+        /* Clip first and last segment to maintain rounded corners */
+        .progress-segment:first-child {
+            border-radius: 15px 0 0 15px;
+        }
+
+        .progress-segment:last-child {
+            border-radius: 0 15px 15px 0;
+        }
+
+        .progress-segment:hover {
+            opacity: 0.85;
         }
 
         .progress-segment .progress-label {
@@ -270,6 +299,48 @@
             font-size: 0.85em;
             text-shadow: 0 1px 2px rgba(0,0,0,0.2);
             white-space: nowrap;
+        }
+
+        /* Progress bar tooltip */
+        .progress-tooltip {
+            position: absolute;
+            bottom: 120%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2c3e50;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.9em;
+            font-weight: 600;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .progress-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: #2c3e50;
+        }
+
+        .progress-segment:hover .progress-tooltip {
+            opacity: 1;
+        }
+
+        .progress-cash-down {
+            background: #ff9500; /* Orange for 5% cash requirement */
+        }
+
+        .progress-min-cash {
+            background: #ff3b30; /* Red for minimum cash needed */
         }
 
         .progress-cpf {
@@ -1118,7 +1189,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🏠 <span class="brand">PropertyPlan SG</span></h1>
+            <h1>🏠 <span class="brand">PropertyPlan SG</span> <span style="font-size: 0.5em; color: #999; font-weight: 400;">v2.2</span></h1>
             <p id="subtitle">Plan and track your S$1.3M property investment</p>
         </div>
 
@@ -1242,9 +1313,15 @@
 
             <!-- Summary Card -->
             <div class="card full-width">
-                <h2>Financial Summary</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="margin: 0;">Financial Summary</h2>
+                    <button type="button" onclick="toggleFinancialSummaryView()" style="padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9em; display: flex; align-items: center; gap: 6px;">
+                        <span id="summaryToggleIcon">📊</span>
+                        <span id="summaryToggleText">Table View</span>
+                    </button>
+                </div>
                 
-                <div class="summary-grid">
+                <div class="summary-grid" id="summaryGridView">
                     
                     <div class="summary-item">
                         <label>💰 Down Payment</label>
@@ -1277,14 +1354,14 @@
                     </div>
                     
                     <div class="summary-item">
-                        <label>💵 Total Cash Needed</label>
-                        <div class="value" id="cashNeeded">S$268,600</div>
-                        <div style="font-size: 0.75em; color: #999; margin-top: 3px;">Cash Down + BSD + ABSD</div>
+                        <label>💰 Total Upfront Needed</label>
+                        <div class="value" id="totalDownPaymentNeeded">S$300,000</div>
+                        <div style="font-size: 0.75em; color: #999; margin-top: 3px;">Down Payment + Total Stamp Duty</div>
                     </div>
                     <div class="summary-item">
-                        <label>💸 Remaining Cash Needed</label>
-                        <div class="value" id="remainingCashNeeded" style="color: #d9534f; font-weight: bold;">S$148,600</div>
-                        <div style="font-size: 0.75em; color: #999; margin-top: 3px;">After CPF & Savings</div>
+                        <label>💵 Minimum Cash Needed</label>
+                        <div class="value" id="cashNeeded">S$268,600</div>
+                        <div style="font-size: 0.75em; color: #999; margin-top: 3px;">Cash Down (5%) + BSD + ABSD</div>
                     </div>
                     <div class="summary-item">
                         <label>🏢 Total Amount Needed</label>
@@ -1303,17 +1380,100 @@
                     </div>
                 </div>
 
+                <!-- Table View (hidden by default) -->
+                <div id="summaryTableView" style="display: none; overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 0.95em;">
+                        <thead>
+                            <tr style="background: #f8f9fa; border-bottom: 2px solid #667eea;">
+                                <th style="padding: 12px; text-align: left; font-weight: 600; color: #333;">Item</th>
+                                <th style="padding: 12px; text-align: right; font-weight: 600; color: #333;">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="border-bottom: 1px solid #e0e0e0;">
+                                <td style="padding: 10px; color: #666;">💰 Down Payment</td>
+                                <td style="padding: 10px; text-align: right; font-weight: 600;" id="tableDownPayment">S$325,000</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #e0e0e0;">
+                                <td style="padding: 10px; color: #666;">🏦 Loan Amount</td>
+                                <td style="padding: 10px; text-align: right; font-weight: 600;" id="tableLoanAmount">S$975,000</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #e0e0e0;">
+                                <td style="padding: 10px; color: #666;">💳 Monthly Payment</td>
+                                <td style="padding: 10px; text-align: right; font-weight: 600;" id="tableMonthlyPayment">S$4,350</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #e0e0e0;">
+                                <td style="padding: 10px; color: #666;">📊 Total Interest</td>
+                                <td style="padding: 10px; text-align: right; font-weight: 600;" id="tableTotalInterest">S$330,000</td>
+                            </tr>
+                            <tr style="border-bottom: 2px solid #667eea; background: #f8f9fa;">
+                                <td style="padding: 10px; color: #333; font-weight: 600;">📑 Total Stamp Duty</td>
+                                <td style="padding: 10px; text-align: right; font-weight: 700;" id="tableTotalStampDuty">S$43,600</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #e0e0e0;">
+                                <td style="padding: 10px 10px 10px 30px; color: #666; font-size: 0.9em;">
+                                    ↳ 📜 Buyer's Stamp Duty (BSD)
+                                </td>
+                                <td style="padding: 10px; text-align: right; font-weight: 600; color: #666; font-size: 0.9em;" id="tableStampDuty">S$43,600</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #e0e0e0;">
+                                <td style="padding: 10px 10px 10px 30px; color: #666; font-size: 0.9em;">
+                                    ↳ 📋 Additional BSD (ABSD)
+                                </td>
+                                <td style="padding: 10px; text-align: right; font-weight: 600; color: #666; font-size: 0.9em;" id="tableAbsdAmount">S$0</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #e0e0e0;">
+                                <td style="padding: 10px; color: #666;">
+                                    💰 Total Upfront Needed
+                                    <div style="font-size: 0.75em; color: #999; margin-top: 3px;">Down Payment + Total Stamp Duty</div>
+                                </td>
+                                <td style="padding: 10px; text-align: right; font-weight: 600;" id="tableTotalDownPaymentNeeded">S$300,000</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #e0e0e0;">
+                                <td style="padding: 10px; color: #666;">
+                                    💵 Minimum Cash Needed
+                                    <div style="font-size: 0.75em; color: #999; margin-top: 3px;">Cash Down (5%) + BSD + ABSD</div>
+                                </td>
+                                <td style="padding: 10px; text-align: right; font-weight: 600;" id="tableCashNeeded">S$268,600</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #e0e0e0;">
+                                <td style="padding: 10px; color: #666;">
+                                    🏢 Total Amount Needed
+                                    <div style="font-size: 0.75em; color: #999; margin-top: 3px;">Property + Duties</div>
+                                </td>
+                                <td style="padding: 10px; text-align: right; font-weight: 600;" id="tableTotalAmountNeeded">S$1,268,600</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #e0e0e0;">
+                                <td style="padding: 10px; color: #666;">📈 TDSR Ratio</td>
+                                <td style="padding: 10px; text-align: right; font-weight: 600;" id="tableTdsrRatio">29%</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px; color: #666;">💴 Cash After CPF</td>
+                                <td style="padding: 10px; text-align: right; font-weight: 600;" id="tableCashPayment">S$0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
                 <div class="input-group" style="margin-top: 20px;">
-                    <label>Upfront Payment Progress</label>
+                    <label>Total Upfront Payment Progress</label>
                     <div style="font-size: 0.85em; color: #666; margin-bottom: 8px;">
                         Track funding for down payment + stamp duties (BSD + ABSD)
                     </div>
-                    <div class="progress-bar-multi" id="progressBarMulti">
-                        <div class="progress-segment progress-cpf" id="progressCPF" style="width: 30%;">
-                            <span class="progress-label">CPF: 30%</span>
-                        </div>
-                        <div class="progress-segment progress-sources" id="progressSources" style="width: 0%;">
-                            <span class="progress-label"></span>
+                    <div style="position: relative;">
+                        <div class="progress-bar-multi" id="progressBarMulti">
+                            <div class="progress-segment progress-min-cash" id="progressMinCash" style="width: 0%;">
+                                <span class="progress-label"></span>
+                                <div class="progress-tooltip" id="tooltipMinCash">S$0</div>
+                            </div>
+                            <div class="progress-segment progress-cpf" id="progressCPF" style="width: 30%;">
+                                <span class="progress-label">CPF: 30%</span>
+                                <div class="progress-tooltip" id="tooltipCPF">S$0</div>
+                            </div>
+                            <div class="progress-segment progress-sources" id="progressSources" style="width: 0%;">
+                                <span class="progress-label"></span>
+                                <div class="progress-tooltip" id="tooltipSources">S$0</div>
+                            </div>
                         </div>
                     </div>
                     <div style="margin-top: 10px; font-size: 0.9em; color: #666;">
@@ -1356,6 +1516,10 @@
                             <!-- Legend -->
                             <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd;">
                                 <div style="font-size: 0.85em; color: #666;">
+                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+                                        <span style="width: 12px; height: 12px; background: #ff3b30; border-radius: 2px;"></span>
+                                        <span>Minimum Cash Needed (5% + Duties)</span>
+                                    </div>
                                     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
                                         <span style="width: 12px; height: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 2px;"></span>
                                         <span>CPF Ordinary Account</span>
@@ -1901,7 +2065,7 @@
             const minCashDownPayment = propertyPrice * 0.05; // 5% must be cash
             const cpfUsedForDownPayment = Math.min(cpfAvailable, downPayment - minCashDownPayment);
             const cashForDownPayment = downPayment - cpfUsedForDownPayment;
-            const totalCashNeeded = cashForDownPayment + totalStampDuty; // ABSD + BSD must be paid in cash
+            const totalCashNeeded = minCashDownPayment + totalStampDuty; // Always 5% cash + BSD + ABSD
             const totalAmountNeeded = propertyPrice + totalStampDuty; // Total including property price and all duties
 
             // Calculate TDSR
@@ -1923,6 +2087,7 @@
             document.getElementById('stampDuty').textContent = formatCurrency(stampDuty);
             document.getElementById('absdAmount').textContent = formatCurrency(absdAmount);
             document.getElementById('totalStampDuty').textContent = formatCurrency(totalStampDuty);
+            document.getElementById('totalDownPaymentNeeded').textContent = formatCurrency(downPayment + totalStampDuty);
             document.getElementById('cashNeeded').textContent = formatCurrency(totalCashNeeded);
             document.getElementById('totalAmountNeeded').textContent = formatCurrency(totalAmountNeeded);
             
@@ -1961,9 +2126,10 @@
             // Enable save button now that calculation is complete
             enableSaveButton();
             
-            // Update funding progress with total cash needed
-            // totalCashNeeded = cash portion of down payment + BSD + ABSD (all must be in cash)
-            updateFundingProgress(totalCashNeeded, cpfAvailable);
+            // Update funding progress with total upfront needed
+            // totalUpfront = full down payment + BSD + ABSD (all upfront costs)
+            const totalUpfront = downPayment + totalStampDuty;
+            updateFundingProgress(totalUpfront, cpfAvailable);
             
             // Update remaining cash needed display
             updateRemainingCashNeeded(totalCashNeeded);
@@ -2260,18 +2426,28 @@
         function updateFundingProgress(totalUpfrontValue = null, cpfValue = null) {
             try {
                 // Use passed values or read from DOM
-                let totalUpfront, cpfAmount;
+                let totalUpfront, cpfAmount, minCashNeeded;
                 
                 if (totalUpfrontValue !== null && cpfValue !== null) {
                     // Values passed directly from calculate()
                     totalUpfront = totalUpfrontValue;
                     cpfAmount = cpfValue;
-                    console.log('Using passed values - CPF:', cpfAmount, 'Total Upfront (DP + BSD + ABSD):', totalUpfront);
+                    
+                    // Get minimum cash needed from DOM
+                    const minCashElement = document.getElementById('cashNeeded');
+                    if (minCashElement && minCashElement.textContent) {
+                        const minCashText = minCashElement.textContent.replace(/[S$,]/g, '');
+                        minCashNeeded = parseFloat(minCashText) || 0;
+                    } else {
+                        minCashNeeded = 0;
+                    }
+                    
+                    console.log('Using passed values - CPF:', cpfAmount, 'Total Upfront:', totalUpfront, 'Min Cash:', minCashNeeded);
                 } else {
                     // Read from DOM elements (when called from input changes)
-                    // Total Upfront = Down Payment + Total Stamp Duty
                     const downPaymentElement = document.getElementById('downPaymentAmount');
                     const stampDutyElement = document.getElementById('totalStampDuty');
+                    const minCashElement = document.getElementById('cashNeeded');
                     
                     if (!downPaymentElement || !downPaymentElement.textContent || 
                         !stampDutyElement || !stampDutyElement.textContent) {
@@ -2290,10 +2466,18 @@
                     
                     totalUpfront = downPayment + stampDuty;
                     
+                    // Get minimum cash needed
+                    if (minCashElement && minCashElement.textContent) {
+                        const minCashText = minCashElement.textContent.replace(/[S$,]/g, '');
+                        minCashNeeded = parseFloat(minCashText) || 0;
+                    } else {
+                        minCashNeeded = 0;
+                    }
+                    
                     // Get CPF amount from input
                     const cpfInput = document.getElementById('cpfAvailable');
                     cpfAmount = cpfInput ? getNumericValue(cpfInput) : 0;
-                    console.log('Using DOM values - CPF:', cpfAmount, 'Total Upfront (DP + BSD + ABSD):', totalUpfront);
+                    console.log('Using DOM values - CPF:', cpfAmount, 'Total Upfront:', totalUpfront, 'Min Cash:', minCashNeeded);
                 }
                 
                 // Get all funding sources
@@ -2311,23 +2495,46 @@
                     });
                 }
                 
-                // Calculate percentages based on total upfront amount (DP + BSD + ABSD)
-                const totalSaved = cpfAmount + otherSourcesTotal;
+                // Calculate percentages based on total upfront amount
+                const minCashPercent = Math.min((minCashNeeded / totalUpfront) * 100, 100);
                 const cpfPercent = Math.min((cpfAmount / totalUpfront) * 100, 100);
                 const otherPercent = Math.min((otherSourcesTotal / totalUpfront) * 100, 100);
+                const totalSaved = minCashNeeded + cpfAmount + otherSourcesTotal;
                 const totalPercent = Math.min((totalSaved / totalUpfront) * 100, 100);
                 
-                console.log('Progress Update - CPF%:', cpfPercent.toFixed(1), 'Other%:', otherPercent.toFixed(1), 'Total%:', totalPercent.toFixed(1));
+                console.log('Progress Update - MinCash%:', minCashPercent.toFixed(1), 'CPF%:', cpfPercent.toFixed(1), 'Other%:', otherPercent.toFixed(1), 'Total%:', totalPercent.toFixed(1));
                 
                 // Update progress bar segments
+                const minCashSegment = document.getElementById('progressMinCash');
                 const cpfSegment = document.getElementById('progressCPF');
                 const sourcesSegment = document.getElementById('progressSources');
+                
+                // Update tooltips
+                const tooltipMinCash = document.getElementById('tooltipMinCash');
+                const tooltipCPF = document.getElementById('tooltipCPF');
+                const tooltipSources = document.getElementById('tooltipSources');
+                
+                if (minCashSegment) {
+                    minCashSegment.style.width = minCashPercent + '%';
+                    const minCashLabel = minCashSegment.querySelector('.progress-label');
+                    if (minCashLabel) {
+                        minCashLabel.textContent = minCashPercent > 5 ? `Cash: ${minCashPercent.toFixed(0)}%` : '';
+                    }
+                    if (tooltipMinCash) {
+                        tooltipMinCash.textContent = formatCurrency(minCashNeeded);
+                    }
+                } else {
+                    console.warn('Min cash segment not found!');
+                }
                 
                 if (cpfSegment) {
                     cpfSegment.style.width = cpfPercent + '%';
                     const cpfLabel = cpfSegment.querySelector('.progress-label');
                     if (cpfLabel) {
                         cpfLabel.textContent = cpfPercent > 5 ? `CPF: ${cpfPercent.toFixed(0)}%` : '';
+                    }
+                    if (tooltipCPF) {
+                        tooltipCPF.textContent = formatCurrency(cpfAmount);
                     }
                 } else {
                     console.warn('CPF segment not found!');
@@ -2338,6 +2545,9 @@
                     const sourcesLabel = sourcesSegment.querySelector('.progress-label');
                     if (sourcesLabel) {
                         sourcesLabel.textContent = otherPercent > 5 ? `Other: ${otherPercent.toFixed(0)}%` : '';
+                    }
+                    if (tooltipSources) {
+                        tooltipSources.textContent = formatCurrency(otherSourcesTotal);
                     }
                 } else {
                     console.warn('Sources segment not found!');
@@ -2357,9 +2567,56 @@
             } catch (error) {
                 console.error('Error updating funding progress:', error);
             }
+        }
+
+        // Financial Summary View Toggle
+        let summaryViewMode = 'grid'; // 'grid' or 'table'
+
+        function toggleFinancialSummaryView() {
+            const gridView = document.getElementById('summaryGridView');
+            const tableView = document.getElementById('summaryTableView');
+            const toggleIcon = document.getElementById('summaryToggleIcon');
+            const toggleText = document.getElementById('summaryToggleText');
             
-            // Also update remaining cash needed
-            updateRemainingCashNeeded();
+            if (summaryViewMode === 'grid') {
+                // Switch to table view
+                gridView.style.display = 'none';
+                tableView.style.display = 'block';
+                toggleIcon.textContent = '📋';
+                toggleText.textContent = 'Card View';
+                summaryViewMode = 'table';
+                
+                // Update table with current values
+                updateTableView();
+            } else {
+                // Switch to grid view
+                gridView.style.display = 'grid';
+                tableView.style.display = 'none';
+                toggleIcon.textContent = '📊';
+                toggleText.textContent = 'Table View';
+                summaryViewMode = 'grid';
+            }
+        }
+
+        function updateTableView() {
+            // Copy all values from grid to table
+            document.getElementById('tableDownPayment').textContent = document.getElementById('downPaymentAmount').textContent;
+            document.getElementById('tableLoanAmount').textContent = document.getElementById('loanAmount').textContent;
+            document.getElementById('tableMonthlyPayment').textContent = document.getElementById('monthlyPayment').textContent;
+            document.getElementById('tableTotalInterest').textContent = document.getElementById('totalInterest').textContent;
+            document.getElementById('tableStampDuty').textContent = document.getElementById('stampDuty').textContent;
+            document.getElementById('tableAbsdAmount').textContent = document.getElementById('absdAmount').textContent;
+            document.getElementById('tableTotalStampDuty').textContent = document.getElementById('totalStampDuty').textContent;
+            document.getElementById('tableTotalDownPaymentNeeded').textContent = document.getElementById('totalDownPaymentNeeded').textContent;
+            document.getElementById('tableCashNeeded').textContent = document.getElementById('cashNeeded').textContent;
+            document.getElementById('tableTotalAmountNeeded').textContent = document.getElementById('totalAmountNeeded').textContent;
+            document.getElementById('tableTdsrRatio').textContent = document.getElementById('tdsrRatio').textContent;
+            document.getElementById('tableCashPayment').textContent = document.getElementById('cashPayment').textContent;
+            
+            // Copy TDSR color styling
+            const tdsrElement = document.getElementById('tdsrRatio');
+            const tableTdsrElement = document.getElementById('tableTdsrRatio');
+            tableTdsrElement.style.color = tdsrElement.style.color;
         }
 
         // Calculate on page load
