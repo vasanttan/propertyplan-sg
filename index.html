@@ -1455,6 +1455,10 @@
                     </table>
                 </div>
 
+                <div class="info-badge">
+                    📊 TDSR limit: 55% of gross monthly income
+                </div>
+
                 <div class="input-group" style="margin-top: 20px;">
                     <label>Total Upfront Payment Progress</label>
                     <div style="font-size: 0.85em; color: #666; margin-bottom: 8px;">
@@ -1534,8 +1538,6 @@
                     </div>
                 </div>
 
-                <div class="info-badge">
-                    📊 TDSR limit: 55% of gross monthly income
                 </div>
 
                 <div class="saved-scenarios" id="savedScenariosPanel">
@@ -2131,6 +2133,9 @@
             const totalUpfront = downPayment + totalStampDuty;
             updateFundingProgress(totalUpfront, cpfAvailable);
             
+            // Update minimum cash (5%) display
+            updateMinimumCash();
+            
             // Update remaining cash needed display
             updateRemainingCashNeeded(totalCashNeeded);
         }
@@ -2166,7 +2171,7 @@
                 const cpfInput = document.getElementById('cpfAvailable');
                 const cpfAmount = cpfInput ? getNumericValue(cpfInput) : 0;
                 
-                // Get all funding sources
+                // Get all funding sources (excluding MinCash and CPF which are already counted)
                 let otherSourcesTotal = 0;
                 const container = document.getElementById('fundingSourcesContainer');
                 
@@ -2174,7 +2179,10 @@
                     const sourceDivs = container.querySelectorAll('.funding-source-row');
                     sourceDivs.forEach(sourceDiv => {
                         const amountInput = sourceDiv.querySelector('[id^="fundingSourceAmount"]');
-                        if (amountInput) {
+                        // Skip MinCash and CPF rows as they're already counted
+                        if (amountInput && 
+                            amountInput.id !== 'fundingSourceAmountCPF' && 
+                            amountInput.id !== 'fundingSourceAmountMinCash') {
                             const amount = getNumericValue(amountInput) || 0;
                             otherSourcesTotal += amount;
                         }
@@ -2361,6 +2369,119 @@
             }
         }
 
+        // Initialize default funding source rows (Minimum Cash + CPF)
+        function initializeCPFRow() {
+            const container = document.getElementById('fundingSourcesContainer');
+            
+            // 1. Create Minimum Cash (5% + BSD + ABSD) row - always first
+            const minCashDiv = document.createElement('div');
+            minCashDiv.className = 'funding-source-row';
+            minCashDiv.id = 'fundingSourceMinCash';
+            
+            // Get initial minimum cash value from cashNeeded (5% + BSD + ABSD)
+            const cashNeededElement = document.getElementById('cashNeeded');
+            let minCashValue = 0;
+            if (cashNeededElement && cashNeededElement.textContent) {
+                const cashNeededText = cashNeededElement.textContent.replace(/[S$,]/g, '');
+                minCashValue = parseFloat(cashNeededText) || 0;
+            }
+            const minCashFormatted = minCashValue > 0 ? minCashValue.toLocaleString('en-SG') : '0';
+            
+            minCashDiv.innerHTML = `
+                <input type="text" 
+                       id="fundingSourceNameMinCash" 
+                       value="Minimum Cash (5% + BSD + ABSD)"
+                       readonly
+                       style="flex: 1; background: #f0f0f0; cursor: not-allowed; color: #666;">
+                <input type="text" 
+                       id="fundingSourceAmountMinCash" 
+                       value="${minCashFormatted}"
+                       readonly
+                       placeholder="Auto-calculated" 
+                       style="flex: 1; background: #f9f9f9; cursor: not-allowed; color: #333; font-weight: 600;">
+            `;
+            
+            container.appendChild(minCashDiv);
+            
+            // 2. Create CPF row - second
+            const cpfDiv = document.createElement('div');
+            cpfDiv.className = 'funding-source-row';
+            cpfDiv.id = 'fundingSourceCPF';
+            
+            // Get initial CPF value from user profile
+            const cpfInput = document.getElementById('cpfAvailable');
+            const cpfNumericValue = cpfInput ? getNumericValue(cpfInput) : 0;
+            const cpfValue = cpfNumericValue > 0 ? cpfNumericValue.toLocaleString('en-SG') : '';
+            
+            cpfDiv.innerHTML = `
+                <input type="text" 
+                       id="fundingSourceNameCPF" 
+                       value="CPF Ordinary Account"
+                       readonly
+                       style="flex: 1; background: #f0f0f0; cursor: not-allowed; color: #666;">
+                <input type="text" 
+                       id="fundingSourceAmountCPF" 
+                       value="${cpfValue}"
+                       placeholder="Amount" 
+                       oninput="formatNumberInput(this); syncCPFFromFundingSource();" 
+                       style="flex: 1;">
+            `;
+            
+            container.appendChild(cpfDiv);
+        }
+
+        // Update Minimum Cash (5% + BSD + ABSD) when calculations change
+        function updateMinimumCash() {
+            const minCashInput = document.getElementById('fundingSourceAmountMinCash');
+            const cashNeededElement = document.getElementById('cashNeeded');
+            
+            if (minCashInput && cashNeededElement && cashNeededElement.textContent) {
+                // Get the Minimum Cash Needed value (5% + BSD + ABSD)
+                const cashNeededText = cashNeededElement.textContent.replace(/[S$,]/g, '');
+                const minCash = parseFloat(cashNeededText) || 0;
+                minCashInput.value = minCash > 0 ? minCash.toLocaleString('en-SG') : '0';
+                
+                // Update progress bar
+                updateFundingProgress();
+            }
+        }
+
+        // Sync CPF from User Profile to Funding Source
+        function syncCPFToFundingSource() {
+            const cpfProfileInput = document.getElementById('cpfAvailable');
+            const cpfFundingInput = document.getElementById('fundingSourceAmountCPF');
+            
+            if (cpfProfileInput && cpfFundingInput) {
+                const cpfValue = getNumericValue(cpfProfileInput);
+                cpfFundingInput.value = cpfValue > 0 ? cpfValue.toLocaleString('en-SG') : '';
+                updateFundingProgress();
+            }
+        }
+
+        // Sync CPF from Funding Source to User Profile
+        function syncCPFFromFundingSource() {
+            const cpfFundingInput = document.getElementById('fundingSourceAmountCPF');
+            const cpfProfileInput = document.getElementById('cpfAvailable');
+            
+            if (cpfFundingInput && cpfProfileInput) {
+                const cpfValue = getNumericValue(cpfFundingInput);
+                cpfProfileInput.value = cpfValue > 0 ? cpfValue.toLocaleString('en-SG') : '';
+                
+                // Trigger recalculation
+                calculate();
+            }
+        }
+
+        // Add listener to CPF input in User Profile and Property Price
+        document.addEventListener('DOMContentLoaded', function() {
+            const cpfInput = document.getElementById('cpfAvailable');
+            if (cpfInput) {
+                cpfInput.addEventListener('input', function() {
+                    syncCPFToFundingSource();
+                });
+            }
+        });
+
         function addFundingSource() {
             fundingSourceCounter++;
             const container = document.getElementById('fundingSourcesContainer');
@@ -2480,7 +2601,7 @@
                     console.log('Using DOM values - CPF:', cpfAmount, 'Total Upfront:', totalUpfront, 'Min Cash:', minCashNeeded);
                 }
                 
-                // Get all funding sources
+                // Get all funding sources (excluding MinCash and CPF which are already counted)
                 let otherSourcesTotal = 0;
                 const container = document.getElementById('fundingSourcesContainer');
                 
@@ -2488,7 +2609,10 @@
                     const sourceDivs = container.querySelectorAll('.funding-source-row');
                     sourceDivs.forEach(sourceDiv => {
                         const amountInput = sourceDiv.querySelector('[id^="fundingSourceAmount"]');
-                        if (amountInput) {
+                        // Skip MinCash and CPF rows as they're already counted
+                        if (amountInput && 
+                            amountInput.id !== 'fundingSourceAmountCPF' && 
+                            amountInput.id !== 'fundingSourceAmountMinCash') {
                             const amount = getNumericValue(amountInput) || 0;
                             otherSourcesTotal += amount;
                         }
@@ -2623,6 +2747,9 @@
         calculate();
         updateMaxTenure();
         validateDownPayment();
+        
+        // Initialize CPF funding source row
+        initializeCPFRow();
 
         // Saved Scenarios Management
         let savedScenarios = JSON.parse(localStorage.getItem('propertyScenarios') || '[]');
