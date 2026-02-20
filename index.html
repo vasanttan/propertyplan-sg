@@ -1511,21 +1511,57 @@
         }
 
         function calculateStampDuty(price) {
+            // Buyer's Stamp Duty (BSD) - Updated rates as of Feb 2023
+            // Tier 1: First S$180,000 @ 1%
+            // Tier 2: Next S$180,000 (S$180K - S$360K) @ 2%
+            // Tier 3: Next S$640,000 (S$360K - S$1M) @ 3%
+            // Tier 4: Next S$500,000 (S$1M - S$1.5M) @ 4%
+            // Tier 5: Above S$1,500,000 @ 5%
+            
             let duty = 0;
+            
             if (price <= 180000) {
+                // Tier 1 only
                 duty = price * 0.01;
             } else if (price <= 360000) {
+                // Tier 1 + Tier 2
                 duty = 1800 + (price - 180000) * 0.02;
             } else if (price <= 1000000) {
+                // Tier 1 + Tier 2 + Tier 3
                 duty = 1800 + 3600 + (price - 360000) * 0.03;
-            } else {
+            } else if (price <= 1500000) {
+                // Tier 1 + Tier 2 + Tier 3 + Tier 4
                 duty = 1800 + 3600 + 19200 + (price - 1000000) * 0.04;
+            } else {
+                // All tiers
+                duty = 1800 + 3600 + 19200 + 20000 + (price - 1500000) * 0.05;
             }
+            
             return duty;
         }
 
         function calculateABSD(price, buyerProfile, entityType = null, propertyType = 'condo') {
+            // Additional Buyer's Stamp Duty (ABSD) - Updated rates as of 27 Apr 2023
+            // 
+            // Singapore Citizens (SC):
+            //   - 1st property: 0%
+            //   - 2nd property: 20%
+            //   - 3rd+ property: 30%
+            // 
+            // Permanent Residents (PR):
+            //   - 1st property: 5%
+            //   - 2nd property: 30%
+            //   - 3rd+ property: 35%
+            // 
+            // Foreigners:
+            //   - Any property: 60%
+            // 
+            // Entities (Companies/Trusts):
+            //   - Housing developers: 35%
+            //   - Other entities: 65%
+            //
             // HDB properties: No ABSD for Singapore Citizens and PRs
+            
             if (propertyType === 'hdb') {
                 if (buyerProfile === 'sc_first' || buyerProfile === 'sc_second' || buyerProfile === 'sc_third' ||
                     buyerProfile === 'pr_first' || buyerProfile === 'pr_second') {
@@ -1534,13 +1570,14 @@
             }
             
             const rates = {
-                'sc_first': 0,
-                'sc_second': 0.20,
-                'sc_third': 0.30,
-                'pr_first': 0.05,
-                'pr_second': 0.30,
-                'foreigner': 0.60,
-                'entity': entityType === 'housing_developer' ? 0.35 : 0.65
+                'sc_first': 0,      // SC 1st property: 0%
+                'sc_second': 0.20,  // SC 2nd property: 20%
+                'sc_third': 0.30,   // SC 3rd+ property: 30%
+                'pr_first': 0.05,   // PR 1st property: 5%
+                'pr_second': 0.30,  // PR 2nd property: 30%
+                'pr_third': 0.35,   // PR 3rd+ property: 35%
+                'foreigner': 0.60,  // Foreigner any property: 60%
+                'entity': entityType === 'housing_developer' ? 0.35 : 0.65  // Entities: 35% or 65%
             };
             
             const rate = rates[buyerProfile] || 0;
@@ -1548,6 +1585,9 @@
         }
 
         function getABSDRate(buyerProfile, entityType = null, propertyType = 'condo') {
+            // Returns ABSD rate as percentage (not decimal)
+            // Updated rates as of 27 Apr 2023
+            
             // HDB properties: No ABSD for Singapore Citizens and PRs
             if (propertyType === 'hdb') {
                 if (buyerProfile === 'sc_first' || buyerProfile === 'sc_second' || buyerProfile === 'sc_third' ||
@@ -1557,13 +1597,14 @@
             }
             
             const rates = {
-                'sc_first': 0,
-                'sc_second': 20,
-                'sc_third': 30,
-                'pr_first': 5,
-                'pr_second': 30,
-                'foreigner': 60,
-                'entity': entityType === 'housing_developer' ? 35 : 65
+                'sc_first': 0,      // SC 1st property: 0%
+                'sc_second': 20,    // SC 2nd property: 20%
+                'sc_third': 30,     // SC 3rd+ property: 30%
+                'pr_first': 5,      // PR 1st property: 5%
+                'pr_second': 30,    // PR 2nd property: 30%
+                'pr_third': 35,     // PR 3rd+ property: 35%
+                'foreigner': 60,    // Foreigner any property: 60%
+                'entity': entityType === 'housing_developer' ? 35 : 65  // Entities: 35% or 65%
             };
             
             return rates[buyerProfile] || 0;
