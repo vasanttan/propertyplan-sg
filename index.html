@@ -1267,6 +1267,7 @@
         .hdb-rail-controls select { width: auto; padding: 4px 8px; font-size: 13px; border-radius: 6px; }
         .hdb-rail-controls .hdb-legend { margin-left: auto; }
         .hdb-rail-sw { width: 22px; border-top: 3px dashed; display: inline-block; }
+        .hdb-nsc-sw { border-top: 5px dotted #6b3fa0; }
         .hdb-map-fallback { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--hdb-muted); font-size: 13px; padding: 16px; text-align: center; }
         @media (max-width: 600px) { .hdb-map { height: 340px; } }
         .hdb-fit-none { font-size: 13px; color: var(--hdb-muted); padding-top: 2px; }
@@ -1811,12 +1812,14 @@
                         </div>
                     </div>
                     <div class="hdb-rail-controls">
-                        <label class="hdb-rail-toggle"><input type="checkbox" id="hdbRailToggle" checked> Show future MRT lines</label>
+                        <label class="hdb-rail-toggle"><input type="checkbox" id="hdbRailToggle" checked> Future MRT lines</label>
+                        <label class="hdb-rail-toggle"><input type="checkbox" id="hdbNscToggle" checked> North-South Corridor</label>
                         <label class="hdb-rail-by">Opening by
                             <select id="hdbRailBy">
                                 <option value="2028">2028</option>
                                 <option value="2029">2029</option>
                                 <option value="2030">2030</option>
+                                <option value="2031">2031</option>
                                 <option value="2032">2032</option>
                                 <option value="2039" selected>All planned</option>
                             </select>
@@ -1824,11 +1827,13 @@
                         <span class="hdb-legend">
                             <span><i class="hdb-rail-sw" style="border-color: #0099aa"></i>Jurong Region Line</span>
                             <span><i class="hdb-rail-sw" style="border-color: #97c616"></i>Cross Island Line</span>
+                            <span><i class="hdb-rail-sw hdb-nsc-sw"></i>North-South Corridor</span>
                         </span>
                     </div>
                     <div class="hdb-map" id="hdbMap" role="region" aria-label="Map of HDB towns in Singapore"></div>
                     <p class="hdb-note">Markers sit at each HDB town centre and grow with the H1 2026 average median for the selected flat type. Hover or tap a marker for prices and nearby future MRT stations; click a town in the list above to jump to it. Scroll-zoom turns on after you click the map.</p>
                     <p class="hdb-note">Future MRT routes: OpenStreetMap contributors. Opening years are LTA targets as of Oct 2026 (JRL Stages 1–2 2028, Stage 3 2029; CRL Phase 1 2030, Phase 2 and Punggol Extension 2032, Phase 3 late 2030s; Changi T5 station opens with Terminal 5) and may change.</p>
+                    <p class="hdb-note">North-South Corridor: a 21.5 km expressway from Admiralty Road West to the East Coast Parkway — an 8.8 km viaduct to Lentor Avenue, opening in phases from 2029, then a 12.3 km tunnel to the ECP, opening in phases from 2031 (LTA revised timeline, 17 Sep 2026). Route from OpenStreetMap.</p>
                 </section>
                 <section class="hdb-panel">
                     <div class="hdb-panel-head">
@@ -4010,7 +4015,25 @@
             CRL3: { line: 'CRL', label: 'Phase 3', year: 2039, when: 'late 2030s' },
             CRLT5: { line: 'CRL', label: 'Changi T5', year: 2036, when: 'with Changi Terminal 5 (mid-2030s)' }
         };
+        // North-South Corridor, southbound carriageway (OpenStreetMap), split at Lentor Avenue.
+        const NSC = [{"s":"NSCV","p":[[1.45668,103.80051],[1.45664,103.80058],[1.4547,103.80102],[1.45365,103.80143],[1.4499,103.80316],[1.44905,103.80369],[1.44841,103.80423],[1.44676,103.80633],[1.44583,103.80786],[1.44361,103.81342],[1.4429,103.8149],[1.44192,103.8166],[1.4412,103.81765],[1.43985,103.8193],[1.43919,103.81998],[1.43787,103.82118],[1.43577,103.82285],[1.43543,103.82332],[1.43518,103.82384],[1.4348,103.82531],[1.43447,103.82592],[1.43418,103.82625],[1.43331,103.82652],[1.43241,103.82666],[1.4286,103.82689],[1.42787,103.82684],[1.42682,103.82653],[1.42535,103.82588],[1.42457,103.82561],[1.42089,103.82493],[1.41868,103.82444],[1.41423,103.8233],[1.41266,103.82296],[1.41125,103.82248],[1.4106,103.82238],[1.40974,103.82244],[1.40931,103.82256],[1.40875,103.82283],[1.40831,103.82317],[1.40791,103.82358],[1.407,103.82482],[1.40639,103.82551],[1.40539,103.82626],[1.40456,103.82675],[1.40363,103.82719],[1.40213,103.82754],[1.40032,103.82786],[1.39855,103.82878],[1.39774,103.82934],[1.39708,103.82996],[1.39608,103.8311],[1.39359,103.83501]]},{"s":"NSCT","p":[[1.39359,103.83501],[1.39051,103.83979],[1.3899,103.84048],[1.38943,103.84085],[1.3887,103.84127],[1.38267,103.84366],[1.38009,103.84443],[1.37579,103.84491],[1.3708,103.84557],[1.37,103.84556],[1.3688,103.84545],[1.36841,103.84536],[1.36754,103.84499],[1.36572,103.84367],[1.36443,103.84311],[1.36089,103.8419],[1.35901,103.84155],[1.35638,103.84167],[1.35577,103.84159],[1.35486,103.84135],[1.35133,103.83996],[1.351,103.83995],[1.34836,103.8405],[1.3478,103.84051],[1.34702,103.8404],[1.34572,103.84],[1.34402,103.83913],[1.34327,103.83914],[1.34117,103.83957],[1.34014,103.83954],[1.33723,103.83915],[1.33384,103.83852],[1.33297,103.8386],[1.33189,103.83892],[1.33055,103.83946],[1.33003,103.83975],[1.32952,103.84021],[1.32644,103.84178],[1.32608,103.84191],[1.32551,103.84205],[1.32478,103.84201],[1.32208,103.84167],[1.32157,103.84179],[1.32124,103.84196],[1.31909,103.84362],[1.3187,103.84385],[1.31841,103.84401],[1.31659,103.84465],[1.31453,103.84533],[1.31314,103.8456],[1.31255,103.84561],[1.31082,103.84541],[1.31023,103.84558],[1.30979,103.84582],[1.30831,103.84705],[1.30805,103.84714],[1.30785,103.8473],[1.30708,103.84815],[1.3048,103.85104],[1.30418,103.8522],[1.30386,103.85317],[1.3034,103.85386],[1.30315,103.85447],[1.30306,103.8554],[1.30175,103.85726],[1.30049,103.85871],[1.29896,103.86008],[1.29779,103.86102]]}];
+        const NSC_PARTS = {
+            NSCV: { label: 'Viaduct · Admiralty Road West to Lentor Avenue', year: 2029, when: 'in phases from 2029', dash: '1 9' },
+            NSCT: { label: 'Tunnel · Lentor Avenue to East Coast Parkway', year: 2031, when: 'in phases from 2031', dash: '1 6' }
+        };
         const NEAR_KM = 1.5;
+        // Distance (km) from a point to a polyline, using a local flat projection.
+        function kmToPolyline(pt, line) {
+            const k = Math.cos(pt[0] * Math.PI / 180), X = q => [(q[1] - pt[1]) * k * 111.32, (q[0] - pt[0]) * 111.32];
+            let best = Infinity;
+            for (let i = 1; i < line.length; i++) {
+                const [ax, ay] = X(line[i - 1]), [bx, by] = X(line[i]);
+                const dx = bx - ax, dy = by - ay, len2 = dx * dx + dy * dy || 1e-12;
+                const u = Math.max(0, Math.min(1, -(ax * dx + ay * dy) / len2));
+                best = Math.min(best, Math.hypot(ax + u * dx, ay + u * dy));
+            }
+            return best;
+        }
         const kmBetween = (a, b) => Math.hypot(a[0] - b[0], (a[1] - b[1]) * Math.cos(a[0] * Math.PI / 180)) * 111.32;
         const nearbyFutureStations = t => FUTURE_RAIL.stations
             .map(st => ({ st, km: kmBetween(TOWN_COORDS[t], st.p) }))
@@ -4034,19 +4057,28 @@
                     .bindTooltip(`<b>${st.n}</b><br>${line.name} · ${stage.label}<br>Opens ${stage.when}`, { direction: 'top', offset: [0, -4] });
                 railItems.push({ layer, year: stage.year });
             });
+            NSC.forEach(part => {
+                const info = NSC_PARTS[part.s];
+                const tip = `<b>North-South Corridor</b><br>${info.label}<br>Opens ${info.when}`;
+                const casing = L.polyline(part.p, { color: '#ffffff', weight: 9, opacity: 0.9, lineCap: 'round', interactive: false });
+                const line = L.polyline(part.p, { color: '#6b3fa0', weight: 6, opacity: 0.95, dashArray: info.dash, lineCap: 'round' })
+                    .bindTooltip(tip, { sticky: true });
+                railItems.push({ layer: casing, year: info.year, nsc: true }, { layer: line, year: info.year, nsc: true });
+            });
             railLayer.addTo(map);
             map.attributionControl.addAttribution('Future MRT routes &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors');
             const sync = () => {
-                const by = +$('hdbRailBy').value, on = $('hdbRailToggle').checked;
-                $('hdbRailBy').disabled = !on;
-                railItems.forEach(({ layer, year }) => {
-                    const show = on && year <= by;
+                const by = +$('hdbRailBy').value, on = $('hdbRailToggle').checked, nscOn = $('hdbNscToggle').checked;
+                $('hdbRailBy').disabled = !on && !nscOn;
+                railItems.forEach(({ layer, year, nsc }) => {
+                    const show = (nsc ? nscOn : on) && year <= by;
                     if (show && !railLayer.hasLayer(layer)) railLayer.addLayer(layer);
                     if (!show && railLayer.hasLayer(layer)) railLayer.removeLayer(layer);
                 });
                 TOWNS.forEach(t => markers[t] && markers[t].bringToFront());
             };
             $('hdbRailToggle').addEventListener('change', sync);
+            $('hdbNscToggle').addEventListener('change', sync);
             $('hdbRailBy').addEventListener('change', sync);
             sync();
         }
@@ -4075,13 +4107,21 @@
             });
         }
 
+        function nscNote(t) {
+            const hits = NSC.map(part => ({ part, km: kmToPolyline(TOWN_COORDS[t], part.p) }))
+                .filter(x => x.km <= NEAR_KM).sort((a, b) => a.km - b.km);
+            if (!hits.length) return '';
+            const info = NSC_PARTS[hits[0].part.s];
+            return `<br><span style="color:#6b3fa0">🛣️ North-South Corridor ${hits[0].km < 0.1 ? 'runs through' : `~${hits[0].km.toFixed(1)} km from`} town centre (${info.label.split(' · ')[0].toLowerCase()}, opens ${info.when})</span>`;
+        }
+
         function railNote(t) {
             const near = nearbyFutureStations(t);
-            if (!near.length) return '';
+            if (!near.length) return nscNote(t);
             const seen = new Set();
             const items = near.filter(x => !seen.has(x.st.n) && seen.add(x.st.n)).slice(0, 4)
                 .map(x => `${x.st.n} (${x.st.l}, ${RAIL_STAGES[x.st.s].when})`);
-            return `<br><span style="color:#0b7d8a">🚇 Future MRT within ${NEAR_KM} km: ${items.join(', ')}</span>`;
+            return `<br><span style="color:#0b7d8a">🚇 Future MRT within ${NEAR_KM} km: ${items.join(', ')}</span>` + nscNote(t);
         }
 
         function renderMap() {
