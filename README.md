@@ -4,7 +4,7 @@ An interactive Singapore property purchase calculator that helps you analyze HDB
 
 ![PropertyPlan SG Overview](screenshots/overview.png)
 
-🔗 **Live Demo:** [https://vasanttan.github.io/propertyplan-sg/](https://vasanttan.github.io/propertyplan-sg/)
+🔗 **Live Demo:** [https://propertyplansg.netlify.app/](https://propertyplansg.netlify.app/)
 
 ---
 
@@ -57,7 +57,7 @@ An interactive Singapore property purchase calculator that helps you analyze HDB
 ## 🚀 Quick Start
 
 ### Use Online
-Simply visit: [https://vasanttan.github.io/propertyplan-sg/](https://vasanttan.github.io/propertyplan-sg/)
+Simply visit: [https://propertyplansg.netlify.app/](https://propertyplansg.netlify.app/)
 
 ### Use Offline
 1. Download `index.html`
@@ -303,4 +303,4 @@ Stamp duty rates, TDSR limits, and property regulations may change. This tool re
 
 **Made with ❤️ for Singapore property buyers**
 
-🏠 **Start planning your property purchase today:** [https://vasanttan.github.io/propertyplan-sg/](https://vasanttan.github.io/propertyplan-sg/)
+🏠 **Start planning your property purchase today:** [https://propertyplansg.netlify.app/](https://propertyplansg.netlify.app/)
