@@ -44,6 +44,38 @@
             opacity: 0.9;
         }
 
+        /* ── User Guide ── */
+        .guide { margin-bottom: 20px; color: #333; }
+        .guide summary {
+            list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+        }
+        .guide summary::-webkit-details-marker { display: none; }
+        .guide-title { font-size: 1.35em; font-weight: 700; color: #667eea; }
+        .guide-toggle::after { content: 'Show guide ▾'; font-size: 0.9em; color: #667eea; white-space: nowrap; }
+        .guide[open] .guide-toggle::after { content: 'Hide ▴'; }
+        .guide summary:focus-visible { outline: 2px solid #667eea; outline-offset: 4px; border-radius: 4px; }
+        .guide-intro { margin: 16px 0 20px; line-height: 1.6; color: #444; max-width: 90ch; }
+        .guide-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
+        @media (max-width: 1100px) {
+            .guide-grid { grid-template-columns: repeat(2, 1fr); }
+            .guide-grid .guide-step:last-child { grid-column: 1 / -1; }
+        }
+        @media (max-width: 600px) { .guide-grid { grid-template-columns: 1fr; } }
+        .guide-step { padding: 16px; background: #f6f7ff; border: 1px solid #e3e6fb; border-radius: 10px; }
+        .guide-num {
+            margin-bottom: 10px; width: 26px; height: 26px; border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; font-weight: 700; font-size: 0.85em;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .guide-step h3, .guide-uses h3 { font-size: 1em; margin-bottom: 6px; color: #333; }
+        .guide-step p { font-size: 0.9em; line-height: 1.55; color: #555; }
+        .guide-uses { margin-top: 20px; }
+        .guide-uses ul { list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 6px 20px; }
+        .guide-uses li { font-size: 0.9em; line-height: 1.5; color: #555; padding-left: 16px; position: relative; }
+        .guide-uses li::before { content: '•'; position: absolute; left: 2px; color: #667eea; font-weight: 700; }
+        .guide-uses li b { color: #333; }
+        .guide-disclaimer { margin-top: 18px; padding-top: 14px; border-top: 1px solid #eee; font-size: 0.8em; color: #888; line-height: 1.5; }
+
         .dashboard {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -1272,6 +1304,63 @@
             <h1>🏠 <span class="brand">PropertyPlan SG</span> <span style="font-size: 0.5em; color: #999; font-weight: 400;">v2.2</span></h1>
             <p id="subtitle">Plan and track your S$1.3M property investment</p>
         </div>
+
+        <!-- User Guide -->
+        <details class="card guide" id="userGuide">
+            <summary>
+                <span class="guide-title">📖 How to use PropertyPlan SG</span>
+                <span class="guide-toggle"></span>
+            </summary>
+            <p class="guide-intro">
+                A Singapore property purchase calculator for working out what an HDB flat or private condo will really cost you —
+                stamp duties (BSD and ABSD), down payment, monthly loan payments, TDSR and CPF usage — and for comparing
+                options side by side before you commit. Everything runs in your browser: no sign-up, and nothing is sent to a server.
+            </p>
+
+            <div class="guide-grid">
+                <section class="guide-step">
+                    <span class="guide-num">1</span>
+                    <h3>Enter your profile</h3>
+                    <p>Age (your loan must end by 65, which caps the tenure), household income, CPF available and monthly CPF contribution, and buyer profile (Citizen, PR or Foreigner; 1st, 2nd or 3rd property) — this sets your ABSD.</p>
+                </section>
+                <section class="guide-step">
+                    <span class="guide-num">2</span>
+                    <h3>Enter the property</h3>
+                    <p>Property type (HDB or condo), price, down payment (at least 25% for a resale condo), loan tenure (up to 30 years) and interest rate (HDB loan 2.6%; bank loans typically 2.6–3.5%).</p>
+                </section>
+                <section class="guide-step">
+                    <span class="guide-num">3</span>
+                    <h3>Calculate and review</h3>
+                    <p>Click <b>Calculate Payment Plan</b> to see your monthly payment, TDSR (limit 55%), stamp duties, total cash needed upfront, the payment chart and the month-by-month schedule (exportable to CSV).</p>
+                </section>
+                <section class="guide-step">
+                    <span class="guide-num">4</span>
+                    <h3>Save and compare</h3>
+                    <p>Click <b>💾 Save Scenario</b> for each option you try, then <b>📊 Compare Scenarios</b> to put 2–10 side by side. 🏆 marks the best value on each metric; switch between Classic 🎴 and Compact 📋 views or export to CSV.</p>
+                </section>
+                <section class="guide-step">
+                    <span class="guide-num">5</span>
+                    <h3>Check the HDB resale market</h3>
+                    <p>Scroll to <b>HDB Resale Medians</b> and drag the budget slider to see which flat types and towns fall within your budget, based on HDB's 2026 median resale prices.</p>
+                </section>
+            </div>
+
+            <div class="guide-uses">
+                <h3>Questions it helps you answer</h3>
+                <ul>
+                    <li><b>What can I afford?</b> Compare an HDB flat against a condo by monthly payment and cash needed.</li>
+                    <li><b>25% or 30% down?</b> Trade a bigger upfront payment for lower monthly payments and less interest.</li>
+                    <li><b>20- or 30-year loan?</b> Shorter costs more each month but far less interest overall.</li>
+                    <li><b>Can I upgrade?</b> Model your next property with 2nd-property ABSD and see if it passes TDSR.</li>
+                    <li><b>How does my age limit my loan?</b> See the maximum tenure applied automatically.</li>
+                </ul>
+            </div>
+
+            <p class="guide-disclaimer">
+                For estimation and planning only — not financial advice. Rates reflect regulations as of January 2025 and may change;
+                confirm figures with your bank, HDB, IRAS or a licensed advisor before committing.
+            </p>
+        </details>
 
         <div class="dashboard">
             <!-- Input Card -->
@@ -3597,6 +3686,19 @@
                 }
             }
         });
+    </script>
+
+    <script>
+        // User guide: open on a first visit, then remember whether it was left open or closed.
+        (function () {
+            const guide = document.getElementById('userGuide');
+            let stored = null;
+            try { stored = localStorage.getItem('guideOpen'); } catch (e) { /* storage unavailable */ }
+            guide.open = stored === null ? true : stored === '1';
+            guide.addEventListener('toggle', () => {
+                try { localStorage.setItem('guideOpen', guide.open ? '1' : '0'); } catch (e) { /* storage unavailable */ }
+            });
+        })();
     </script>
 
     <!-- HDB Resale Dashboard -->
