@@ -1185,6 +1185,60 @@
         .confirm-modal-btn.cancel:hover {
             background: #d0d0d0;
         }
+
+        /* ── HDB Resale Dashboard ── */
+        .hdb {
+            --hdb-q1: #2a78d6;
+            --hdb-q2: #eb6834;
+            --hdb-line: #e2e6e3;
+            --hdb-fg2: #4d5753;
+            --hdb-muted: #7d8883;
+            display: grid;
+            gap: 20px;
+            min-width: 0;
+        }
+        .hdb h2 { margin-bottom: 0; }
+        .hdb-lede { color: var(--hdb-fg2); max-width: 75ch; margin-top: -6px; }
+        .hdb-controls { display: flex; flex-wrap: wrap; gap: 8px; }
+        .hdb-chip {
+            font-family: inherit; font-size: 13px; font-weight: 500;
+            border: 1px solid var(--hdb-line); background: #eef1ef; color: #141a18;
+            padding: 6px 14px; border-radius: 999px; cursor: pointer;
+        }
+        .hdb-chip[aria-pressed="true"] { background: #667eea; border-color: #667eea; color: #fff; }
+        .hdb-chip:focus-visible, .hdb-sortbtn:focus-visible { outline: 2px solid var(--hdb-q1); outline-offset: 2px; }
+        .hdb-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+        .hdb-stat { padding: 12px 14px; border: 1px solid var(--hdb-line); border-radius: 8px; }
+        .hdb-stat small { display: block; color: var(--hdb-muted); font-size: 12px; }
+        .hdb-stat b { display: block; font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; color: #333; }
+        .hdb-stat b.hdb-stat-md { font-size: 16px; }
+        .hdb-stat b.hdb-stat-sm { font-size: 15px; }
+        .hdb-panel { border: 1px solid var(--hdb-line); border-radius: 10px; padding: 18px 16px; display: grid; gap: 12px; min-width: 0; }
+        .hdb-panel-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; align-items: baseline; }
+        .hdb-panel h3 { font-size: 1.1em; color: #333; margin: 0; }
+        .hdb-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; font-size: 13px; color: var(--hdb-fg2); }
+        .hdb-legend span { display: inline-flex; align-items: center; gap: 6px; }
+        .hdb-sw { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+        .hdb-dash { width: 16px; border-top: 2px dashed #141a18; display: inline-block; }
+        .hdb-sortbtn {
+            font-family: inherit; font-size: 12px; font-weight: 500; background: none; border: none;
+            color: var(--hdb-fg2); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; padding: 2px;
+        }
+        .hdb-chart { overflow-x: auto; }
+        .hdb svg text { fill: var(--hdb-fg2); font-size: 12px; }
+        .hdb svg .mono { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-variant-numeric: tabular-nums; }
+        .hdb-tip {
+            position: fixed; pointer-events: none; background: #141a18; color: #f7f8f7; font-size: 12.5px;
+            padding: 8px 10px; border-radius: 6px; line-height: 1.45; z-index: 1100; max-width: 240px;
+            font-variant-numeric: tabular-nums;
+        }
+        .hdb-note { font-size: 12.5px; color: var(--hdb-muted); margin: 0; }
+        .hdb details summary { cursor: pointer; font-weight: 600; color: #333; }
+        .hdb-table { margin-top: 12px; border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+        .hdb-table th, .hdb-table td { padding: 6px 8px; border-bottom: 1px solid var(--hdb-line); text-align: right; white-space: nowrap; background: none; color: #333; position: static; }
+        .hdb-table th:first-child, .hdb-table td:first-child { text-align: left; }
+        .hdb-table th { font-weight: 600; color: var(--hdb-fg2); font-size: 12px; }
+        .hdb-table td.na { color: var(--hdb-muted); }
     </style>
 </head>
 <body>
@@ -1595,6 +1649,41 @@
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- HDB Resale Market -->
+            <div class="card full-width hdb" id="hdbDashboard">
+                <h2>HDB Resale Medians by Town · H1 2026</h2>
+                <p class="hdb-lede">Q1 and Q2 2026 medians side by side for each town, plus a combined H1 view across all flat types. The dashed line marks your property price (<span id="hdbBudgetLede">S$650k</span>). Hover any mark for the figures.</p>
+                <div class="hdb-controls" id="hdbTypes" role="group" aria-label="Flat type"></div>
+                <div class="hdb-stats" id="hdbStats"></div>
+                <section class="hdb-panel">
+                    <div class="hdb-panel-head">
+                        <h3 id="hdbDumbbellTitle">Q1 → Q2 median by town</h3>
+                        <div class="hdb-legend">
+                            <span><i class="hdb-sw" style="background: var(--hdb-q1)"></i>Q1 2026</span>
+                            <span><i class="hdb-sw" style="background: var(--hdb-q2)"></i>Q2 2026</span>
+                            <span><i class="hdb-dash"></i><span id="hdbBudgetLegend">S$650k</span> budget</span>
+                            <button class="hdb-sortbtn" id="hdbSortBtn" type="button">Sort: Q2 price</button>
+                        </div>
+                    </div>
+                    <div class="hdb-chart" id="hdbDumbbell"></div>
+                    <p class="hdb-note">Towns with fewer than 20 transactions (or none) in both quarters for this flat type are omitted. A single dot means only one quarter had a published median.</p>
+                </section>
+                <section class="hdb-panel">
+                    <div class="hdb-panel-head">
+                        <h3>H1 2026 combined median, town × flat type</h3>
+                        <span class="hdb-note">Average of the Q1 and Q2 medians (or the one quarter available)</span>
+                    </div>
+                    <div class="hdb-chart" id="hdbHeat"></div>
+                </section>
+                <section class="hdb-panel">
+                    <details>
+                        <summary>Data table</summary>
+                        <div class="hdb-chart" id="hdbTable"></div>
+                    </details>
+                </section>
+                <p class="hdb-note">Source: HDB, “Median Resale Prices by Town and Flat Type, for Resale Cases Registered from 2nd Quarter 2007 to 2nd Quarter 2026”. “–” no transactions; “*” fewer than 20 transactions (not published). Prices include COV and are rounded to the nearest $100. The H1 figure is a simple mean of two quarterly medians, not the true half-year median.</p>
             </div>
         </div>
     </div>
@@ -3467,6 +3556,257 @@
                 }
             }
         });
+    </script>
+
+    <!-- HDB Resale Dashboard -->
+    <div class="hdb-tip" id="hdbTip" hidden></div>
+    <script>
+    (function () {
+        const TYPES = ['1-Room', '2-Room', '3-Room', '4-Room', '5-Room', 'Executive'];
+        // Values: number, "-" (no transactions) or "*" (fewer than 20 transactions). Order follows TYPES.
+        const Q1 = {
+            'Ang Mo Kio': ['-', '*', 441800, 630000, 1090000, '*'],
+            'Bedok': ['-', '*', 425500, 588000, 809000, '*'],
+            'Bishan': ['-', '-', '*', 805000, 970000, '*'],
+            'Bukit Batok': ['-', 382000, 410000, 649000, 830000, 884400],
+            'Bukit Merah': ['*', '*', 445400, 938000, 1085000, '-'],
+            'Bukit Panjang': ['-', '*', 465000, 566500, 706400, '*'],
+            'Bukit Timah': ['-', '-', '*', '*', '*', '*'],
+            'Central Area': ['-', '-', '*', '*', '*', '-'],
+            'Choa Chu Kang': ['-', '*', 462500, 550900, 675000, 822900],
+            'Clementi': ['-', '*', 435000, 781000, '*', '*'],
+            'Geylang': ['-', '*', 388000, 808400, '*', '*'],
+            'Hougang': ['-', '*', 450000, 617000, 778500, 920000],
+            'Jurong East': ['-', '*', 415000, 548900, 715500, '*'],
+            'Jurong West': ['-', '*', 386500, 535500, 635000, 800000],
+            'Kallang/Whampoa': ['-', '*', 450000, 929000, 930500, '*'],
+            'Marine Parade': ['-', '-', '*', '*', '*', '-'],
+            'Pasir Ris': ['-', '*', '*', 640000, 735000, 927500],
+            'Punggol': ['-', 395400, 545000, 685000, 805000, '*'],
+            'Queenstown': ['-', '*', 500000, 1038000, '*', '*'],
+            'Sembawang': ['-', 371000, 522500, 600000, 652500, '*'],
+            'Sengkang': ['-', '*', 540000, 640000, 710000, 854000],
+            'Serangoon': ['-', '-', 468000, 650000, '*', '*'],
+            'Tampines': ['-', '*', 491400, 668000, 820000, 970000],
+            'Toa Payoh': ['-', '*', 370000, 1000000, 1100000, '*'],
+            'Woodlands': ['-', '*', 432500, 550000, 650000, 935900],
+            'Yishun': ['-', '*', 435000, 555000, 700000, 880000]
+        };
+        const Q2 = {
+            'Ang Mo Kio': ['-', '*', 425000, 638000, '*', '-'],
+            'Bedok': ['-', '*', 411300, 582500, 804000, '*'],
+            'Bishan': ['-', '-', '*', 788000, 978000, '*'],
+            'Bukit Batok': ['-', 380000, 425000, 645900, 800000, '*'],
+            'Bukit Merah': ['*', '*', 430000, 944000, '*', '-'],
+            'Bukit Panjang': ['-', '-', 435000, 563900, 685000, '*'],
+            'Bukit Timah': ['-', '-', '*', '*', '*', '*'],
+            'Central Area': ['-', '*', '*', 1194400, '*', '-'],
+            'Choa Chu Kang': ['-', '*', '*', 560000, 662000, '*'],
+            'Clementi': ['-', '*', 438900, 888900, '*', '*'],
+            'Geylang': ['-', '*', 358000, 710000, '*', '*'],
+            'Hougang': ['-', '*', 450000, 621400, 720500, 983000],
+            'Jurong East': ['-', '*', 410000, 559400, 721500, '*'],
+            'Jurong West': ['-', '*', 404000, 530000, 633500, 795000],
+            'Kallang/Whampoa': ['-', '*', 455000, 918900, 976300, '*'],
+            'Marine Parade': ['-', '-', '*', '*', '*', '-'],
+            'Pasir Ris': ['-', '*', '*', 630000, 730000, 909000],
+            'Punggol': ['-', 401000, 545000, 680000, 790000, '*'],
+            'Queenstown': ['-', '*', 535900, 1035000, '*', '-'],
+            'Sembawang': ['-', 385000, 511500, 595000, 644400, '*'],
+            'Sengkang': ['-', '*', 545000, 641000, 680000, 858000],
+            'Serangoon': ['-', '-', 450000, 670000, '*', '*'],
+            'Tampines': ['-', '*', 478000, 668000, 828000, 968000],
+            'Toa Payoh': ['-', '*', 375000, 1019000, '*', '*'],
+            'Woodlands': ['-', '*', 428900, 550000, 655000, 916500],
+            'Yishun': ['-', '*', 428000, 545000, 690000, '*']
+        };
+        const TOWNS = Object.keys(Q2);
+        const SEQ = ['#e8f0fb', '#b9d1f3', '#7fa9e6', '#3f7fd4', '#1f56a8', '#123a78'];
+        const SORT_LABELS = { q2: 'Q2 price', chg: 'change', az: 'A–Z' };
+        const NEXT_SORT = { q2: 'chg', chg: 'az', az: 'q2' };
+        const NS = 'http://www.w3.org/2000/svg';
+
+        const num = v => (typeof v === 'number' ? v : null);
+        const fmt = v => 'S$' + Math.round(v).toLocaleString('en-SG');
+        const fmtK = v => (v >= 1e6 ? 'S$' + (v / 1e6).toFixed(2).replace(/0$/, '') + 'M' : 'S$' + Math.round(v / 1000) + 'k');
+        const code = v => (v === '-' ? 'none' : '&lt;20 txns');
+        const h1 = (t, i) => { const a = num(Q1[t][i]), b = num(Q2[t][i]); if (a && b) return (a + b) / 2; return a || b || null; };
+        const pctChange = r => (r.a && r.b ? (r.b - r.a) / r.a * 100 : null);
+        const signed = p => (p >= 0 ? '+' : '') + p.toFixed(1) + '%';
+        const median = arr => { const s = [...arr].sort((x, y) => x - y), m = s.length >> 1; return s.length ? (s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2) : null; };
+        const $ = id => document.getElementById(id);
+
+        let typeIdx = 3, sortMode = 'q2', budget = 650000;
+        try { const s = localStorage.getItem('hdbType'); if (s !== null && TYPES[+s]) typeIdx = +s; } catch (e) { /* storage unavailable */ }
+
+        function readBudget() {
+            const input = $('propertyPrice');
+            const v = input ? parseFloat(String(input.value).replace(/[^0-9.]/g, '')) : NaN;
+            return v > 0 ? v : 650000;
+        }
+
+        const tip = $('hdbTip');
+        function showTip(e, html) { tip.innerHTML = html; tip.hidden = false; moveTip(e); }
+        function moveTip(e) {
+            const w = tip.offsetWidth, h = tip.offsetHeight;
+            let x = e.clientX + 14, y = e.clientY + 14;
+            if (x + w > innerWidth - 8) x = e.clientX - w - 14;
+            if (y + h > innerHeight - 8) y = e.clientY - h - 14;
+            tip.style.left = x + 'px'; tip.style.top = y + 'px';
+        }
+        function hideTip() { tip.hidden = true; }
+        function tipHtml(t, i, extra) {
+            return `<b>${t}</b> · ${TYPES[i]}<br>Q1: ${num(Q1[t][i]) ? fmt(Q1[t][i]) : code(Q1[t][i])}<br>Q2: ${num(Q2[t][i]) ? fmt(Q2[t][i]) : code(Q2[t][i])}` + (extra ? '<br>' + extra : '');
+        }
+
+        function el(tag, attrs, parent) {
+            const n = document.createElementNS(NS, tag);
+            for (const k in attrs) n.setAttribute(k, attrs[k]);
+            if (parent) parent.appendChild(n);
+            return n;
+        }
+        function niceTicks(lo, hi, n) {
+            const span = hi - lo, step0 = span / n, mag = Math.pow(10, Math.floor(Math.log10(step0)));
+            const step = [1, 2, 2.5, 5, 10].map(m => m * mag).find(s => span / s <= n) || 10 * mag;
+            const a = Math.floor(lo / step) * step, b = Math.ceil(hi / step) * step;
+            const out = [];
+            for (let v = a; v <= b + 1e-6; v += step) out.push(v);
+            return out;
+        }
+
+        function renderStats() {
+            const rows = TOWNS.map(t => ({ t, a: num(Q1[t][typeIdx]), b: num(Q2[t][typeIdx]) }));
+            const both = rows.filter(r => r.a && r.b), q2s = rows.filter(r => r.b);
+            const withData = TOWNS.filter(t => h1(t, typeIdx)).length;
+            if (!withData) {
+                $('hdbStats').innerHTML = `<div class="hdb-stat"><small>${TYPES[typeIdx]}</small><b class="hdb-stat-sm">No published medians in H1 2026</b></div>`;
+                return;
+            }
+            const up = both.filter(r => r.b > r.a).length, down = both.filter(r => r.b < r.a).length;
+            const under = TOWNS.filter(t => { const v = h1(t, typeIdx); return v && v <= budget; }).length;
+            const top = [...q2s].sort((x, y) => y.b - x.b)[0];
+            $('hdbStats').innerHTML = `
+                <div class="hdb-stat"><small>${TYPES[typeIdx]} · median of town medians, Q2</small><b>${q2s.length ? fmt(median(q2s.map(r => r.b))) : '–'}</b></div>
+                <div class="hdb-stat"><small>Towns up / down, Q1 → Q2</small><b>${up} ▲&nbsp;&nbsp;${down} ▼</b></div>
+                <div class="hdb-stat"><small>Priciest town, Q2</small><b class="hdb-stat-md">${top ? top.t + ' · ' + fmtK(top.b) : '–'}</b></div>
+                <div class="hdb-stat"><small>Towns at or under ${fmtK(budget)} (H1 avg)</small><b>${under} of ${withData}</b></div>`;
+        }
+
+        function renderDumbbell() {
+            const host = $('hdbDumbbell'); host.innerHTML = '';
+            $('hdbDumbbellTitle').textContent = `${TYPES[typeIdx]}: Q1 → Q2 median by town`;
+            $('hdbSortBtn').textContent = 'Sort: ' + SORT_LABELS[sortMode];
+            const rows = TOWNS.map(t => ({ t, a: num(Q1[t][typeIdx]), b: num(Q2[t][typeIdx]) })).filter(r => r.a || r.b);
+            if (!rows.length) { host.innerHTML = '<p class="hdb-note">No town has 20+ transactions for this flat type in either quarter.</p>'; return; }
+            const key = r => r.b || r.a;
+            if (sortMode === 'q2') rows.sort((x, y) => key(y) - key(x));
+            else if (sortMode === 'chg') rows.sort((x, y) => (pctChange(y) ?? -900) - (pctChange(x) ?? -900));
+            else rows.sort((x, y) => x.t.localeCompare(y.t));
+
+            const W = Math.max(host.clientWidth, 560), L = 128, R = 132, T = 26, rowH = 26, H = T + rows.length * rowH + 8;
+            const vals = rows.flatMap(r => [r.a, r.b]).filter(Boolean).concat([budget]);
+            const ticks = niceTicks(Math.min(...vals) * 0.97, Math.max(...vals) * 1.02, 6);
+            const lo = ticks[0], hi = ticks[ticks.length - 1];
+            const x = v => L + (v - lo) / (hi - lo) * (W - L - R);
+            const svg = el('svg', { width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Dumbbell chart of Q1 and Q2 2026 median prices by town' }, host);
+            ticks.forEach(v => {
+                el('line', { x1: x(v), x2: x(v), y1: T - 6, y2: H - 6, stroke: '#eceFED' }, svg);
+                el('text', { x: x(v), y: T - 12, 'text-anchor': 'middle', class: 'mono' }, svg).textContent = fmtK(v);
+            });
+            if (budget >= lo && budget <= hi) {
+                el('line', { x1: x(budget), x2: x(budget), y1: T - 6, y2: H - 6, stroke: '#141a18', 'stroke-width': 1.5, 'stroke-dasharray': '4 4', opacity: 0.7 }, svg);
+            }
+            rows.forEach((r, i) => {
+                const cy = T + i * rowH + rowH / 2;
+                const g = el('g', {}, svg);
+                el('rect', { x: 0, y: cy - rowH / 2, width: W, height: rowH, fill: 'transparent' }, g);
+                el('text', { x: L - 12, y: cy + 4, 'text-anchor': 'end' }, g).textContent = r.t;
+                if (r.a && r.b) el('line', { x1: x(r.a), x2: x(r.b), y1: cy, y2: cy, stroke: '#7d8883', 'stroke-width': 2, opacity: 0.55 }, g);
+                if (r.a) el('circle', { cx: x(r.a), cy, r: 5.5, fill: 'var(--hdb-q1)', stroke: '#fff', 'stroke-width': 2 }, g);
+                if (r.b) el('circle', { cx: x(r.b), cy, r: 5.5, fill: 'var(--hdb-q2)', stroke: '#fff', 'stroke-width': 2 }, g);
+                const pct = pctChange(r);
+                el('text', { x: W - R + 10, y: cy + 4, class: 'mono' }, g).textContent = (r.b ? fmtK(r.b) : '—') + (pct !== null ? '  ' + signed(pct) : '');
+                const html = tipHtml(r.t, typeIdx, pct !== null ? `Change: ${signed(pct)} (${r.b - r.a >= 0 ? '+' : '−'}${fmt(Math.abs(r.b - r.a))})` : '');
+                g.addEventListener('pointerenter', e => { g.querySelectorAll('circle').forEach(c => c.setAttribute('r', 7)); showTip(e, html); });
+                g.addEventListener('pointermove', moveTip);
+                g.addEventListener('pointerleave', () => { g.querySelectorAll('circle').forEach(c => c.setAttribute('r', 5.5)); hideTip(); });
+            });
+        }
+
+        function renderHeat() {
+            const host = $('hdbHeat'); host.innerHTML = '';
+            const cols = TYPES.map((_, i) => i).filter(i => TOWNS.some(t => h1(t, i)));
+            const all = TOWNS.flatMap(t => cols.map(i => h1(t, i))).filter(Boolean);
+            const mn = Math.min(...all), mx = Math.max(...all);
+            const bin = v => Math.min(5, Math.floor((v - mn) / (mx - mn + 1) * 6));
+            const L = 128, ch = 24, T = 28;
+            const cw = Math.max(78, Math.min(120, (Math.max(host.clientWidth, 520) - L) / cols.length));
+            const W = L + cols.length * cw, H = T + TOWNS.length * ch + 40;
+            const svg = el('svg', { width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Heatmap of H1 2026 average median price by town and flat type' }, host);
+            cols.forEach((i, c) => {
+                el('text', { x: L + c * cw + cw / 2, y: T - 10, 'text-anchor': 'middle', 'font-weight': 600 }, svg).textContent = TYPES[i];
+                if (i === typeIdx) el('rect', { x: L + c * cw + 1, y: T - 2, width: cw - 2, height: TOWNS.length * ch + 2, fill: 'none', stroke: 'var(--hdb-q2)', 'stroke-width': 2, rx: 4 }, svg);
+            });
+            TOWNS.forEach((t, r) => {
+                const y = T + r * ch;
+                el('text', { x: L - 12, y: y + ch / 2 + 4, 'text-anchor': 'end' }, svg).textContent = t;
+                cols.forEach((i, c) => {
+                    const v = h1(t, i);
+                    const g = el('g', {}, svg);
+                    const cell = el('rect', { x: L + c * cw + 2, y: y + 1, width: cw - 4, height: ch - 2, rx: 3, fill: v ? SEQ[bin(v)] : '#eef1ef' }, g);
+                    const tx = el('text', { x: L + c * cw + cw / 2, y: y + ch / 2 + 4, 'text-anchor': 'middle', class: 'mono', 'font-size': 11.5 }, g);
+                    if (v) { tx.textContent = fmtK(v); tx.style.fill = bin(v) >= 3 ? '#ffffff' : '#141a18'; }
+                    else { tx.textContent = (Q1[t][i] === '-' && Q2[t][i] === '-') ? '–' : '*'; tx.style.fill = '#7d8883'; }
+                    const html = tipHtml(t, i, v ? 'H1 avg: ' + fmt(v) : '');
+                    g.addEventListener('pointerenter', e => { cell.setAttribute('stroke', '#141a18'); cell.setAttribute('stroke-width', 1.5); showTip(e, html); });
+                    g.addEventListener('pointermove', moveTip);
+                    g.addEventListener('pointerleave', () => { cell.removeAttribute('stroke'); hideTip(); });
+                });
+            });
+            const ly = T + TOWNS.length * ch + 16;
+            SEQ.forEach((s, k) => el('rect', { x: L + k * 36, y: ly, width: 34, height: 10, rx: 2, fill: s }, svg));
+            el('text', { x: L, y: ly + 24, class: 'mono', 'font-size': 11 }, svg).textContent = fmtK(mn);
+            el('text', { x: L + 6 * 36 - 2, y: ly + 24, 'text-anchor': 'end', class: 'mono', 'font-size': 11 }, svg).textContent = fmtK(mx);
+        }
+
+        function renderTable() {
+            const cell = v => (num(v) ? fmt(v) : v === '-' ? '–' : '*');
+            let h = `<table class="hdb-table"><thead><tr><th>Town</th>${TYPES.map(t => `<th>${t} Q1</th><th>${t} Q2</th>`).join('')}</tr></thead><tbody>`;
+            TOWNS.forEach(t => {
+                h += `<tr><td>${t}</td>${TYPES.map((_, i) => [Q1, Q2].map(Q => `<td class="${num(Q[t][i]) ? '' : 'na'}">${cell(Q[t][i])}</td>`).join('')).join('')}</tr>`;
+            });
+            $('hdbTable').innerHTML = h + '</tbody></table>';
+        }
+
+        function render() {
+            budget = readBudget();
+            $('hdbBudgetLede').textContent = fmtK(budget);
+            $('hdbBudgetLegend').textContent = fmtK(budget);
+            TYPES.forEach((_, i) => $('hdbType' + i).setAttribute('aria-pressed', i === typeIdx));
+            renderStats(); renderDumbbell(); renderHeat();
+        }
+
+        function init() {
+            TYPES.forEach((t, i) => {
+                const b = document.createElement('button');
+                b.className = 'hdb-chip'; b.type = 'button'; b.id = 'hdbType' + i; b.textContent = t;
+                b.onclick = () => { typeIdx = i; try { localStorage.setItem('hdbType', i); } catch (e) { /* storage unavailable */ } render(); };
+                $('hdbTypes').appendChild(b);
+            });
+            $('hdbSortBtn').onclick = () => { sortMode = NEXT_SORT[sortMode]; render(); };
+            renderTable(); render();
+
+            // Follow the property price input, including when other controls change it programmatically.
+            let lastBudget = budget;
+            const checkBudget = () => { if (readBudget() !== lastBudget) { lastBudget = readBudget(); render(); } };
+            ['input', 'change', 'click'].forEach(ev => document.addEventListener(ev, () => setTimeout(checkBudget, 0)));
+            let rt;
+            addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(render, 150); });
+        }
+
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+        else init();
+    })();
     </script>
 </body>
 </html>
