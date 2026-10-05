@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PropertyPlan SG - Singapore Property Purchase Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" integrity="sha512-h9FcoyWjHcOcmEVkxOfTLnmZFWIH0iZhZT1H2TbOq55xssQGEJHEaIm+PgoUaZbRvQTNTluNOEfb1ZRy6D3BOw==" crossorigin="anonymous" referrerpolicy="no-referrer">
     <style>
         * {
             margin: 0;
@@ -1255,6 +1256,13 @@
             border: 1px solid #bfe5cc; white-space: nowrap; font-variant-numeric: tabular-nums;
         }
         .hdb-town i { font-style: normal; opacity: 0.75; margin-left: 4px; }
+        .hdb-town { cursor: pointer; font-family: inherit; }
+        .hdb-town:hover { background: #d3efdc; }
+        .hdb-sw-empty { background: #fff; border: 2px solid #9aa3a0; width: 8px; height: 8px; }
+        .hdb-map { height: 440px; border-radius: 8px; border: 1px solid var(--hdb-line); position: relative; z-index: 0; background: #eef1ef; }
+        .hdb-map .leaflet-tooltip { font-family: inherit; font-size: 12.5px; line-height: 1.45; padding: 6px 9px; }
+        .hdb-map-fallback { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--hdb-muted); font-size: 13px; padding: 16px; text-align: center; }
+        @media (max-width: 600px) { .hdb-map { height: 340px; } }
         .hdb-fit-none { font-size: 13px; color: var(--hdb-muted); padding-top: 2px; }
         @media (max-width: 600px) { .hdb-fit-row { grid-template-columns: 1fr; gap: 6px; } }
         .hdb-chip {
@@ -1786,6 +1794,18 @@
                         <span class="hdb-note">Based on the H1 2026 average median · cheapest first · click a flat type to focus it</span>
                     </div>
                     <div class="hdb-fits" id="hdbFits"></div>
+                </section>
+                <section class="hdb-panel">
+                    <div class="hdb-panel-head">
+                        <h3 id="hdbMapTitle">Where the towns are</h3>
+                        <div class="hdb-legend">
+                            <span><i class="hdb-sw" style="background: #2e9e5b"></i>Within budget</span>
+                            <span><i class="hdb-sw" style="background: #eb6834"></i>Over budget</span>
+                            <span><i class="hdb-sw hdb-sw-empty"></i>No published median</span>
+                        </div>
+                    </div>
+                    <div class="hdb-map" id="hdbMap" role="region" aria-label="Map of HDB towns in Singapore"></div>
+                    <p class="hdb-note">Markers sit at each HDB town centre and grow with the H1 2026 average median for the selected flat type. Hover or tap a marker for prices; click a town in the list above to jump to it. Scroll-zoom turns on after you click the map.</p>
                 </section>
                 <section class="hdb-panel">
                     <div class="hdb-panel-head">
@@ -3702,6 +3722,7 @@
     </script>
 
     <!-- HDB Resale Dashboard -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" integrity="sha512-puJW3E/qXDqYp9IfhAI54BJEaWIfloJ7JWs7OeD5i6ruC9JZL1gERT1wjtwXFlh7CjE7ZJ+/vcRZRkIYIb6p4g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <div class="hdb-tip" id="hdbTip" hidden></div>
     <script>
     (function () {
@@ -3930,7 +3951,7 @@
                 if (!priced.length) return;
                 const fits = priced.filter(r => r.v <= budget);
                 const towns = fits.length
-                    ? fits.map(r => `<span class="hdb-town">${r.t}<i>${fmtK(r.v)}</i></span>`).join('')
+                    ? fits.map(r => `<button type="button" class="hdb-town" data-town="${r.t}">${r.t}<i>${fmtK(r.v)}</i></button>`).join('')
                     : `<span class="hdb-fit-none">None yet — cheapest is ${priced[0].t} at ${fmtK(priced[0].v)} (${fmtK(priced[0].v - budget)} more)</span>`;
                 h += `<div class="hdb-fit-row">
                     <button type="button" class="hdb-fit-type" data-type="${i}" aria-pressed="${i === typeIdx}"><b>${type}</b><small>${fits.length} of ${priced.length} towns</small></button>
@@ -3938,6 +3959,73 @@
                 </div>`;
             });
             $('hdbFits').innerHTML = h;
+        }
+
+        // Approximate HDB town centres (lat, lng).
+        const TOWN_COORDS = {
+            'Ang Mo Kio': [1.3691, 103.8454], 'Bedok': [1.3236, 103.9273], 'Bishan': [1.3526, 103.8352],
+            'Bukit Batok': [1.3590, 103.7637], 'Bukit Merah': [1.2819, 103.8239], 'Bukit Panjang': [1.3774, 103.7719],
+            'Bukit Timah': [1.3294, 103.8021], 'Central Area': [1.2870, 103.8500], 'Choa Chu Kang': [1.3840, 103.7470],
+            'Clementi': [1.3162, 103.7649], 'Geylang': [1.3201, 103.8918], 'Hougang': [1.3612, 103.8863],
+            'Jurong East': [1.3329, 103.7436], 'Jurong West': [1.3404, 103.7090], 'Kallang/Whampoa': [1.3100, 103.8651],
+            'Marine Parade': [1.3020, 103.9072], 'Pasir Ris': [1.3721, 103.9474], 'Punggol': [1.3984, 103.9072],
+            'Queenstown': [1.2942, 103.7861], 'Sembawang': [1.4491, 103.8185], 'Sengkang': [1.3868, 103.8914],
+            'Serangoon': [1.3554, 103.8679], 'Tampines': [1.3496, 103.9568], 'Toa Payoh': [1.3343, 103.8563],
+            'Woodlands': [1.4382, 103.7890], 'Yishun': [1.4304, 103.8354]
+        };
+        let map = null;
+        const markers = {};
+
+        function initMap() {
+            const host = $('hdbMap');
+            if (!window.L) {
+                host.innerHTML = '<div class="hdb-map-fallback">The map could not load (no connection to the map library). The rest of the dashboard still works.</div>';
+                return;
+            }
+            map = L.map(host, { scrollWheelZoom: false, minZoom: 11, maxZoom: 16, maxBounds: [[1.15, 103.55], [1.52, 104.15]] })
+                .fitBounds([[1.24, 103.62], [1.47, 104.0]]);
+            // OneMap basemap by the Singapore Land Authority (free, no key; attribution required).
+            L.tileLayer('https://www.onemap.gov.sg/maps/tiles/Grey/{z}/{x}/{y}.png', {
+                minZoom: 11, maxZoom: 16,
+                attribution: '<img src="https://www.onemap.gov.sg/web-assets/images/logo/om_logo.png" style="height:20px;width:20px;vertical-align:middle" alt="">&nbsp;<a href="https://www.onemap.gov.sg/" target="_blank" rel="noopener noreferrer">OneMap</a>&nbsp;&copy;&nbsp;contributors&nbsp;&#124;&nbsp;<a href="https://www.sla.gov.sg/" target="_blank" rel="noopener noreferrer">Singapore Land Authority</a>'
+            }).addTo(map);
+            map.on('click', () => map.scrollWheelZoom.enable());
+            map.on('mouseout', () => map.scrollWheelZoom.disable());
+            TOWNS.forEach(t => {
+                markers[t] = L.circleMarker(TOWN_COORDS[t], { weight: 2, color: '#fff', fillOpacity: 0.85 })
+                    .bindTooltip('', { direction: 'top', offset: [0, -8] })
+                    .on('click', () => markers[t].openTooltip())
+                    .addTo(map);
+            });
+        }
+
+        function renderMap() {
+            if (!map) return;
+            $('hdbMapTitle').textContent = `Where the towns are · ${TYPES[typeIdx]} vs ${fmtK(budget)}`;
+            const vals = TOWNS.map(t => h1(t, typeIdx)).filter(Boolean);
+            const lo = Math.min(...vals), hi = Math.max(...vals);
+            TOWNS.forEach(t => {
+                const v = h1(t, typeIdx), m = markers[t];
+                if (!v) {
+                    m.setStyle({ fillColor: '#ffffff', color: '#9aa3a0', fillOpacity: 1 }).setRadius(6);
+                    m.setTooltipContent(tipHtml(t, typeIdx, 'No published median for H1 2026'));
+                    return;
+                }
+                const fits = v <= budget;
+                const radius = hi > lo ? 8 + (v - lo) / (hi - lo) * 10 : 12;
+                m.setStyle({ fillColor: fits ? '#2e9e5b' : '#eb6834', color: '#fff', fillOpacity: 0.85 }).setRadius(radius);
+                const gap = fits ? `<span style="color:#2e9e5b">✓ Within budget (${fmtK(budget - v)} to spare)</span>`
+                                 : `<span style="color:#eb6834">✗ ${fmtK(v - budget)} over budget</span>`;
+                m.setTooltipContent(tipHtml(t, typeIdx, `H1 avg: ${fmt(v)}<br>${gap}`));
+                if (fits) m.bringToFront();
+            });
+        }
+
+        function focusTown(t) {
+            if (!map || !markers[t]) return;
+            $('hdbMap').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            map.flyTo(TOWN_COORDS[t], 13, { duration: 0.8 });
+            map.once('moveend', () => markers[t].openTooltip());
         }
 
         function setBudget(v) {
@@ -3956,7 +4044,7 @@
 
         function render() {
             TYPES.forEach((_, i) => $('hdbType' + i).setAttribute('aria-pressed', i === typeIdx));
-            renderFits(); renderStats(); renderDumbbell(); renderHeat();
+            renderFits(); renderStats(); renderMap(); renderDumbbell(); renderHeat();
         }
 
         function init() {
@@ -3970,6 +4058,8 @@
             $('hdbFits').addEventListener('click', e => {
                 const btn = e.target.closest('.hdb-fit-type');
                 if (btn) selectType(+btn.dataset.type);
+                const town = e.target.closest('.hdb-town');
+                if (town) focusTown(town.dataset.town);
             });
 
             let frame;
@@ -3981,6 +4071,7 @@
             $('hdbBudgetReset').onclick = () => { setBudget(readBudget()); render(); };
 
             setBudget(readBudget());
+            initMap();
             renderTable(); render();
 
             // Follow the property price input, including when other controls change it programmatically.
