@@ -1200,6 +1200,31 @@
         .hdb h2 { margin-bottom: 0; }
         .hdb-lede { color: var(--hdb-fg2); max-width: 75ch; margin-top: -6px; }
         .hdb-controls { display: flex; flex-wrap: wrap; gap: 8px; }
+        .hdb-budget { padding: 14px 16px; border: 1px solid var(--hdb-line); border-radius: 10px; background: #f6f7ff; }
+        .hdb-budget-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
+        .hdb-budget-head label { font-weight: 600; color: #333; margin: 0; }
+        .hdb-budget-head output { font-size: 22px; font-weight: 700; color: #667eea; font-variant-numeric: tabular-nums; }
+        .hdb-budget-head .hdb-sortbtn { margin-left: auto; }
+        .hdb-budget input[type="range"] { width: 100%; margin: 10px 0 2px; accent-color: #667eea; padding: 0; border: none; background: none; height: 24px; cursor: pointer; }
+        .hdb-budget-scale { display: flex; justify-content: space-between; font-size: 12px; color: var(--hdb-muted); }
+        .hdb-fits { display: grid; gap: 10px; }
+        .hdb-fit-row { display: grid; grid-template-columns: 150px 1fr; gap: 10px; align-items: start; padding: 8px 0; border-top: 1px solid var(--hdb-line); }
+        .hdb-fit-row:first-child { border-top: none; padding-top: 0; }
+        .hdb-fit-type {
+            font-family: inherit; text-align: left; background: none; border: none; padding: 2px 0; cursor: pointer; color: #333;
+        }
+        .hdb-fit-type b { display: block; font-size: 14px; }
+        .hdb-fit-type small { color: var(--hdb-muted); font-size: 12px; }
+        .hdb-fit-type[aria-pressed="true"] b { color: #667eea; }
+        .hdb-fit-type:focus-visible { outline: 2px solid var(--hdb-q1); outline-offset: 2px; }
+        .hdb-fit-towns { display: flex; flex-wrap: wrap; gap: 6px; }
+        .hdb-town {
+            font-size: 12.5px; padding: 3px 9px; border-radius: 999px; background: #e7f6ec; color: #1d6b3a;
+            border: 1px solid #bfe5cc; white-space: nowrap; font-variant-numeric: tabular-nums;
+        }
+        .hdb-town i { font-style: normal; opacity: 0.75; margin-left: 4px; }
+        .hdb-fit-none { font-size: 13px; color: var(--hdb-muted); padding-top: 2px; }
+        @media (max-width: 600px) { .hdb-fit-row { grid-template-columns: 1fr; gap: 6px; } }
         .hdb-chip {
             font-family: inherit; font-size: 13px; font-weight: 500;
             border: 1px solid var(--hdb-line); background: #eef1ef; color: #141a18;
@@ -1654,9 +1679,25 @@
             <!-- HDB Resale Market -->
             <div class="card full-width hdb" id="hdbDashboard">
                 <h2>HDB Resale Medians by Town · H1 2026</h2>
-                <p class="hdb-lede">Q1 and Q2 2026 medians side by side for each town, plus a combined H1 view across all flat types. The dashed line marks your property price (<span id="hdbBudgetLede">S$650k</span>). Hover any mark for the figures.</p>
+                <p class="hdb-lede">Q1 and Q2 2026 medians side by side for each town, plus a combined H1 view across all flat types. Drag the budget slider to see which flat types and towns fit; hover any mark for the figures.</p>
+                <div class="hdb-budget">
+                    <div class="hdb-budget-head">
+                        <label for="hdbBudgetSlider">Your budget</label>
+                        <output id="hdbBudgetValue" for="hdbBudgetSlider">S$650k</output>
+                        <button type="button" class="hdb-sortbtn" id="hdbBudgetReset">Use property price</button>
+                    </div>
+                    <input type="range" id="hdbBudgetSlider" min="300000" max="1300000" step="10000" value="650000">
+                    <div class="hdb-budget-scale"><span>S$300k</span><span>S$1.3M</span></div>
+                </div>
                 <div class="hdb-controls" id="hdbTypes" role="group" aria-label="Flat type"></div>
                 <div class="hdb-stats" id="hdbStats"></div>
+                <section class="hdb-panel">
+                    <div class="hdb-panel-head">
+                        <h3 id="hdbFitsTitle">What fits under S$650k</h3>
+                        <span class="hdb-note">Based on the H1 2026 average median · cheapest first · click a flat type to focus it</span>
+                    </div>
+                    <div class="hdb-fits" id="hdbFits"></div>
+                </section>
                 <section class="hdb-panel">
                     <div class="hdb-panel-head">
                         <h3 id="hdbDumbbellTitle">Q1 → Q2 median by town</h3>
@@ -3753,6 +3794,7 @@
                 cols.forEach((i, c) => {
                     const v = h1(t, i);
                     const g = el('g', {}, svg);
+                    if (v && v > budget) g.setAttribute('opacity', 0.25);
                     const cell = el('rect', { x: L + c * cw + 2, y: y + 1, width: cw - 4, height: ch - 2, rx: 3, fill: v ? SEQ[bin(v)] : '#eef1ef' }, g);
                     const tx = el('text', { x: L + c * cw + cw / 2, y: y + ch / 2 + 4, 'text-anchor': 'middle', class: 'mono', 'font-size': 11.5 }, g);
                     if (v) { tx.textContent = fmtK(v); tx.style.fill = bin(v) >= 3 ? '#ffffff' : '#141a18'; }
@@ -3778,28 +3820,77 @@
             $('hdbTable').innerHTML = h + '</tbody></table>';
         }
 
-        function render() {
-            budget = readBudget();
-            $('hdbBudgetLede').textContent = fmtK(budget);
+        function renderFits() {
+            $('hdbFitsTitle').textContent = 'What fits under ' + fmtK(budget);
+            let h = '';
+            TYPES.forEach((type, i) => {
+                const priced = TOWNS.map(t => ({ t, v: h1(t, i) })).filter(r => r.v).sort((a, b) => a.v - b.v);
+                if (!priced.length) return;
+                const fits = priced.filter(r => r.v <= budget);
+                const towns = fits.length
+                    ? fits.map(r => `<span class="hdb-town">${r.t}<i>${fmtK(r.v)}</i></span>`).join('')
+                    : `<span class="hdb-fit-none">None yet — cheapest is ${priced[0].t} at ${fmtK(priced[0].v)} (${fmtK(priced[0].v - budget)} more)</span>`;
+                h += `<div class="hdb-fit-row">
+                    <button type="button" class="hdb-fit-type" data-type="${i}" aria-pressed="${i === typeIdx}"><b>${type}</b><small>${fits.length} of ${priced.length} towns</small></button>
+                    <div class="hdb-fit-towns">${towns}</div>
+                </div>`;
+            });
+            $('hdbFits').innerHTML = h;
+        }
+
+        function setBudget(v) {
+            const slider = $('hdbBudgetSlider');
+            budget = Math.min(+slider.max, Math.max(+slider.min, Math.round(v / 10000) * 10000));
+            slider.value = budget;
+            $('hdbBudgetValue').textContent = fmtK(budget);
             $('hdbBudgetLegend').textContent = fmtK(budget);
+        }
+
+        function selectType(i) {
+            typeIdx = i;
+            try { localStorage.setItem('hdbType', i); } catch (e) { /* storage unavailable */ }
+            render();
+        }
+
+        function render() {
             TYPES.forEach((_, i) => $('hdbType' + i).setAttribute('aria-pressed', i === typeIdx));
-            renderStats(); renderDumbbell(); renderHeat();
+            renderFits(); renderStats(); renderDumbbell(); renderHeat();
         }
 
         function init() {
             TYPES.forEach((t, i) => {
                 const b = document.createElement('button');
                 b.className = 'hdb-chip'; b.type = 'button'; b.id = 'hdbType' + i; b.textContent = t;
-                b.onclick = () => { typeIdx = i; try { localStorage.setItem('hdbType', i); } catch (e) { /* storage unavailable */ } render(); };
+                b.onclick = () => selectType(i);
                 $('hdbTypes').appendChild(b);
             });
             $('hdbSortBtn').onclick = () => { sortMode = NEXT_SORT[sortMode]; render(); };
+            $('hdbFits').addEventListener('click', e => {
+                const btn = e.target.closest('.hdb-fit-type');
+                if (btn) selectType(+btn.dataset.type);
+            });
+
+            let frame;
+            $('hdbBudgetSlider').addEventListener('input', e => {
+                setBudget(+e.target.value);
+                cancelAnimationFrame(frame);
+                frame = requestAnimationFrame(render);
+            });
+            $('hdbBudgetReset').onclick = () => { setBudget(readBudget()); render(); };
+
+            setBudget(readBudget());
             renderTable(); render();
 
             // Follow the property price input, including when other controls change it programmatically.
-            let lastBudget = budget;
-            const checkBudget = () => { if (readBudget() !== lastBudget) { lastBudget = readBudget(); render(); } };
-            ['input', 'change', 'click'].forEach(ev => document.addEventListener(ev, () => setTimeout(checkBudget, 0)));
+            let lastPrice = readBudget();
+            const checkPrice = () => {
+                const p = readBudget();
+                if (p !== lastPrice) { lastPrice = p; setBudget(p); render(); }
+            };
+            ['input', 'change', 'click'].forEach(ev => document.addEventListener(ev, e => {
+                if (e.target.closest && e.target.closest('#hdbDashboard')) return;
+                setTimeout(checkPrice, 0);
+            }));
             let rt;
             addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(render, 150); });
         }
